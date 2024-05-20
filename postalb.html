@@ -31,13 +31,11 @@
             padding: 5px;
         }
         .directory-icon {
+            background: url('album-icon.png') no-repeat center center;
             width: 100px;
             height: 100px;
             margin-right: 10px;
             border-radius: 5px;
-            background-size: cover;
-            background-position: center;
-            background-image: url('album-icon.png');
         }
         .directory-name {
             font-size: 16px;
@@ -53,8 +51,6 @@
             border-radius: 10px;
             margin-left: 10px;
             cursor: pointer;
-            font-size: 18px; /* 调整字体大小 */
-            font-weight: bold; /* 加粗字体 */
         }
         .delete-btn:hover {
             background-color: darkred;
@@ -131,12 +127,11 @@
 
                 let icon = document.createElement('div');
                 icon.classList.add('directory-icon');
-                icon.style.backgroundImage = `url(${dir.cover || 'album-icon.png'})`; // 使用自定义封面或默认封面
                 div.appendChild(icon);
 
                 let name = document.createElement('div');
                 name.classList.add('directory-name');
-                name.textContent = dir.name;
+                name.textContent = dir;
                 div.appendChild(name);
 
                 let viewWallBtn = document.createElement('button');
@@ -144,7 +139,7 @@
                 viewWallBtn.textContent = '照片墙';
                 viewWallBtn.onclick = function(event) {
                     event.stopPropagation(); // 阻止事件冒泡
-                    window.location.href = `./listdbwall.html?username=${username}&directory=${dir.name}`;
+                    window.location.href = `./listdbwall.html?username=${username}&directory=${dir}`;
                 };
                 div.appendChild(viewWallBtn);
 
@@ -153,16 +148,16 @@
                 viewManageBtn.textContent = '相册管理';
                 viewManageBtn.onclick = function(event) {
                     event.stopPropagation(); // 阻止事件冒泡
-                    window.location.href = `./pldb-manage.html?username=${username}&directory=${dir.name}`;
+                    window.location.href = `./pldb-manage.html?username=${username}&directory=${dir}`;
                 };
                 div.appendChild(viewManageBtn);
 
                 let deleteButton = document.createElement('button');
                 deleteButton.classList.add('delete-btn');
-                deleteButton.textContent = 'x';
+                deleteButton.textContent = '删除';
                 deleteButton.onclick = function(event) {
                     event.stopPropagation(); // 阻止事件冒泡
-                    deleteDirectory(dir.name);
+                    deleteDirectory(dir);
                 };
                 div.appendChild(deleteButton);
 
