@@ -57,12 +57,12 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
     <script>
         $(document).ready(function () {
-            const imgWidth = 300; // Width of each image item
+            const imgWidth = 300; // 定义图片宽度
             fetchPhotos();
 
             function fetchPhotos() {
-                // Fetch photos logic here
-                let imgList = ['./img1.jpg', './img2.jpg']; // Sample image list
+                // 假设的图片列表，应从服务器获取
+                let imgList = ['./img1.jpg', './img2.jpg', './img3.jpg'];
                 renderImages(imgList);
             }
 
@@ -70,44 +70,36 @@
                 const grid = $('.grid');
                 let str = '';
                 for (let i = 0; i < imgList.length; i++) {
-                    str += `<div class="grid-item"><img onclick="showBigImg(this)" data-original="${imgList[i]}" src="${imgList[i]}"></div>`;
+                    // 添加onload事件确保图片加载后应用瀑布流布局
+                    str += `<div class="grid-item"><img onload="waterfallHandler()" src="${imgList[i]}" alt="Image ${i}"></div>`;
                 }
                 grid.html(str);
-                waterfallHandler();
             }
 
             function waterfallHandler() {
-                let column = Math.max(1, parseInt($(window).width() / imgWidth)); // At least one column
+                let column = Math.max(1, parseInt($(window).width() / imgWidth)); // 至少保持一列
                 let heightArr = Array(column).fill(0);
-                $('img').each(function (index, item) {
-                    let itemHeight = $(item).outerHeight();
+                $('.grid-item img').each(function () {
+                    let itemHeight = $(this).outerHeight();
                     let minHeight = Math.min(...heightArr);
                     let minIndex = heightArr.indexOf(minHeight);
-                    $(item).parent().css({
+                    $(this).parent().css({
                         position: 'absolute',
                         top: minHeight + 'px',
-                        left: minIndex * imgWidth + 'px',
-                        width: imgWidth + 'px'
+                        left: minIndex * imgWidth + 'px'
                     });
-                    heightArr[minIndex] += itemHeight + 10; // Update column height by adding image height plus gap
+                    heightArr[minIndex] += itemHeight + 10; // 更新高度数组，加上间隔
                 });
             }
 
-            function showBigImg(img) {
-                var bigImg = document.getElementById('bigimg');
-                var imgUrl = img.getAttribute('data-original');
-                bigImg.innerHTML = '<img src="' + imgUrl + '">';
-                bigImg.style.display = 'block';
-            }
-
             function closeBigImg() {
-                var bigImg = document.getElementById('bigimg');
+                const bigImg = document.getElementById('bigimg');
                 bigImg.style.display = 'none';
                 bigImg.innerHTML = '';
             }
 
             $(window).resize(function () {
-                waterfallHandler();
+                waterfallHandler(); // 窗口调整大小时重新布局
             });
         });
     </script>
