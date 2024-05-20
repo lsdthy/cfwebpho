@@ -12,19 +12,19 @@
             font-family: Arial, sans-serif;
         }
         .grid {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 10px;
+            column-gap: 10px;
             padding: 20px;
             width: 100%;
+            column-fill: balance; /* Ensures columns are filled evenly */
         }
         .grid-item {
             background: #fff;
             border-radius: 10px;
             box-shadow: 0 2px 5px rgba(0, 0, 0, 0.15);
             margin-bottom: 10px;
+            break-inside: avoid; /* Prevents column break within an item */
             display: inline-block;
-            width: calc(33.333% - 20px);
+            width: 100%;
         }
         .grid-item img {
             width: 100%;
@@ -53,8 +53,22 @@
             object-fit: contain;
             transform: translate(-50%, -50%);
         }
+        @media (max-width: 480px) {
+            .grid { column-count: 1; }
+        }
+        @media (min-width: 481px) and (max-width: 768px) {
+            .grid { column-count: 2; }
+        }
+        @media (min-width: 769px) and (max-width: 1024px) {
+            .grid { column-count: 3; }
+        }
+        @media (min-width: 1025px) and (max-width: 2048px) {
+            .grid { column-count: 3; }
+        }
+        @media (min-width: 2049px) {
+            .grid { column-count: 7; }
+        }
     </style>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/masonry/4.2.2/masonry.pkgd.min.css">
 </head>
 <body>
     <div class="grid"></div>
@@ -62,13 +76,10 @@
         <img src="" alt="Big Image">
     </div>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/imagesloaded/4.1.4/imagesloaded.pkgd.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/masonry/4.2.2/masonry.pkgd.min.js"></script>
     <script>
         const params = new URLSearchParams(window.location.search);
         const username = params.get('username');
         const dirName = params.get('directory');
-        let msnry;
 
         async function fetchPhotos() {
             const response = await fetch(`./db/getdbab`, {
@@ -90,15 +101,7 @@
             grid.innerHTML = imgList.map(img => 
                 `<div class="grid-item"><img src="loading.gif" data-src="${img}" alt="Photo" onclick="expandImage(this)"></div>`
             ).join('');
-            imagesLoaded(grid, function() {
-                msnry = new Masonry(grid, {
-                    itemSelector: '.grid-item',
-                    columnWidth: '.grid-item',
-                    percentPosition: true
-                });
-                grid.style.display = 'flex'; // Show grid after layout
-                lazyLoadImages();
-            });
+            lazyLoadImages();
         }
 
         function preloadImages(imgUrls) {
@@ -115,16 +118,12 @@
                     if (entry.isIntersecting) {
                         const img = entry.target;
                         img.src = img.dataset.src;
-                        img.onload = () => {
-                            img.style.opacity = 1;
-                            msnry.layout(); // Re-layout Masonry after each image load
-                        };
+                        img.onload = () => img.style.opacity = 1;
                         observer.unobserve(img);
                     }
                 });
             }, {
-                rootMargin: '50px',
-                threshold: 0.1
+                rootMargin: '50px'
             });
 
             images.forEach(image => {
