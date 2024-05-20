@@ -12,7 +12,7 @@
             font-family: Arial, sans-serif;
         }
         .grid {
-            max-width: 1200px;
+            max-width: 100%;
             margin: auto;
             padding: 20px;
             display: flex;
@@ -25,7 +25,6 @@
             box-shadow: 0 2px 5px rgba(0, 0, 0, 0.15);
             overflow: hidden;
             position: relative;
-            width: calc(100% - 10px); /* 默认全宽 */
         }
         .grid-item img {
             width: 100%;
@@ -50,21 +49,6 @@
             object-fit: contain;
             transform: translate(-50%, -50%);
         }
-        @media (min-width: 600px) {
-            .grid-item {
-                width: calc(50% - 10px); /* 平板上2列 */
-            }
-        }
-        @media (min-width: 900px) {
-            .grid-item {
-                width: calc(33.333% - 10px); /* 电脑上3列 */
-            }
-        }
-        @media (min-width: 1200px) {
-            .grid-item {
-                width: calc(25% - 10px); /* 大屏幕上4列 */
-            }
-        }
     </style>
 </head>
 <body>
@@ -77,6 +61,7 @@
         const username = params.get('username');
         const dirName = params.get('directory');
         var imgList = [];
+        var currentImgIndex = 0;
 
         async function fetchPhotos() {
             const response = await fetch(`./db/getdbab`, {
@@ -96,14 +81,37 @@
             const grid = document.querySelector('.grid');
             let str = '';
             for (let i = 0; i < imgList.length; i++) {
-                str += `<div class="grid-item"><img onclick="showBigImg(this)" data-original="${imgList[i]}" src="${imgList[i]}"></div>`;
+                str += `<div class="grid-item"><img onclick="showBigImg(${i})" data-original="${imgList[i]}" src="${imgList[i]}"></div>`;
             }
             grid.innerHTML = str;
+            adjustGridItems();
         }
 
-        function showBigImg(img) {
+        function adjustGridItems() {
+            const gridItems = document.querySelectorAll('.grid-item');
+            const screenWidth = window.innerWidth;
+            let columns = 1;
+
+            if (screenWidth >= 1600) {
+                columns = Math.floor(screenWidth / 300); // 大屏幕，列数基于每列300px宽
+            } else if (screenWidth >= 1200) {
+                columns = 4;
+            } else if (screenWidth >= 900) {
+                columns = 3;
+            } else if (screenWidth >= 600) {
+                columns = 2;
+            }
+
+            const columnWidth = `calc(${100 / columns}% - 10px)`;
+            gridItems.forEach(item => {
+                item.style.width = columnWidth;
+            });
+        }
+
+        function showBigImg(index) {
+            currentImgIndex = index;
             const bigImg = document.getElementById('bigimg');
-            const imgUrl = img.getAttribute('data-original');
+            const imgUrl = imgList[index];
             bigImg.innerHTML = `<img src="${imgUrl}">`;
             bigImg.style.display = 'block';
         }
@@ -113,6 +121,21 @@
             bigImg.style.display = 'none';
             bigImg.innerHTML = '';
         }
+
+        document.addEventListener('keydown', function(event) {
+            if (document.getElementById('bigimg').style.display === 'block') {
+                if (event.key === 'ArrowLeft') {
+                    currentImgIndex = (currentImgIndex > 0) ? currentImgIndex - 1 : imgList.length - 1;
+                    showBigImg(currentImgIndex);
+                }
+                if (event.key === 'ArrowRight') {
+                    currentImgIndex = (currentImgIndex < imgList.length - 1) ? currentImgIndex + 1 : 0;
+                    showBigImg(currentImgIndex);
+                }
+            }
+        });
+
+        window.addEventListener('resize', adjustGridItems);
 
         fetchPhotos();
     </script>
