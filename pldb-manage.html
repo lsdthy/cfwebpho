@@ -12,31 +12,29 @@
             padding: 0;
             font-family: Arial, sans-serif;
         }
-        /* 返回首页按钮样式 */
-        #returnHome, #backupAlbum, #deleteSelected, #downloadSelected {
+        /* 按钮样式 */
+        .action-btn {
             position: fixed;
             top: 10px;
-            padding: 10px 15px;
+            padding: 10px 20px;
             background-color: #007bff;
             color: white;
             border: none;
             cursor: pointer;
             z-index: 100;
+            margin-left: 10px; /* 按钮之间的间距 */
         }
         #returnHome {
-            right: 320px;
             background-color: #28a745; /* 绿色背景 */
         }
-        #backupAlbum {
-            right: 10px;
-        }
         #deleteSelected {
-            right: 200px;
             background-color: red;
         }
         #downloadSelected {
-            right: 80px;
             background-color: orange;
+        }
+        #backupAlbum {
+            background-color: #007bff;
         }
         /* 模态窗口（lightbox）样式 */
         .modal {
@@ -152,14 +150,16 @@
 </head>
 <body>
     <!-- 添加返回首页按钮 -->
-    <button id="returnHome">返回首页</button>
-    <button id="backupAlbum">备份相册</button>
-    <button class="operation-btn" id="deleteSelected">删除选中</button>
-    <button class="operation-btn" id="downloadSelected">下载选中</button>
+    <button id="returnHome" class="action-btn">返回首页</button>
+    <button id="downloadSelected" class="action-btn">下载选中</button>
+    <button id="deleteSelected" class="action-btn">删除选中</button>
+    <button id="backupAlbum" class="action-btn">备份相册</button>
     <h1 id="albumTitle"></h1>
     <div id="photoWall"></div>
     <textarea id="photoUrl" placeholder="输入图片URL地址，每行一个；无输入请选择图片上传：" cols="60" rows="5"></textarea>
     <button id="submitPhoto">批量添加图片</button>
+    <input type="file" id="fileInput" multiple accept="image/*">
+    <button id="uploadPhotos">上传图片</button>
 
     <div id="myModal" class="modal">
         <span class="close">×</span>
@@ -206,7 +206,7 @@
                 imgContainer.appendChild(imgText);
 
                 let img = document.createElement('img');
-                img.src = url;
+                img.setAttribute('data-src', url); // 使用 data-src 属性用于懒加载
                 img.style.width = '100%';
                 img.style.height = '100%';
                 img.onclick = function() {
@@ -242,6 +242,7 @@
 
                 photoWall.appendChild(imgContainer);
             });
+            lazyLoad(); // 初始化懒加载
         }
 
         async function deletePhoto(photoUrl) {
@@ -285,6 +286,50 @@
             }
             alert('选中图片已下载');
         }
+
+        async function submitPhotoUrls() {
+            const photoUrls = document.getElementById('photoUrl').value.trim().split('\n');
+            const validPhotoUrls = photoUrls.filter(url => url.trim() !== '');
+            const photoUrlsString = validPhotoUrls.join('\n');
+            const response = await fetch('./db/addbpho', {
+                method: 'POST',
+                body: JSON.stringify({ username, dirName, photoUrlsString }),
+                headers: { 'Content-Type': 'application/json' }
+            });
+            if (response.ok) {
+                window.location.reload();
+            } else {
+                console.error('Failed to submit photo');
+            }
+        }
+
+        async function uploadPhotos() {
+            const files = document.getElementById('fileInput').files;
+            if (files.length === 0) {
+                alert('请选择要上传的图片');
+                return;
+            }
+            const formData = new FormData();
+            for (let file of files) {
+                formData.append('photos', file);
+            }
+            formData.append('username', username);
+            formData.append('dirName', dirName);
+            const response = await fetch('./db/uploadbpho', {
+                method: 'POST',
+                body: formData
+            });
+            if (response.ok) {
+                alert('图片上传成功，请稍后刷新信息');
+                window.location.reload();
+            } else {
+                alert('图片上传失败，请稍后重试');
+                console.error('Failed to upload photos');
+            }
+        }
+
+        document.getElementById('submitPhoto').onclick = submitPhotoUrls;
+        document.getElementById('uploadPhotos').onclick = uploadPhotos;
 
         document.getElementById('backupAlbum').onclick = function() {
             const photoUrlsString = photoUrls.join('\n').replace(/(^\s*\n)|(\n\s*$)/g, '');
