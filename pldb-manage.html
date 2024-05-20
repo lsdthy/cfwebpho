@@ -16,7 +16,7 @@
         #returnHome {
             position: fixed;
             top: 10px;
-            right: 200px; /* 根据备份相册按钮的宽度调整，使其与备份相册按钮平齐 */
+            right: 380px; /* 根据备份相册按钮的宽度调整，使其与备份相册按钮平齐 */
             padding: 10px 20px; /* 与备份相册按钮的内边距相同 */
             background-color: #28a745; /* 绿色背景 */
             color: white;
@@ -24,24 +24,26 @@
             cursor: pointer;
         }
         /* 备份按钮样式 */
-        #backupAlbum {
+        #backupAlbum, #deleteSelected, #downloadSelected, #setCover {
             position: fixed;
             top: 10px;
-            right: 10px;
             padding: 10px 20px;
             background-color: #007bff;
             color: white;
             border: none;
             cursor: pointer;
         }
-        /* 操作按钮样式 */
-        .operation-btn {
-            padding: 10px 20px;
-            margin: 10px;
-            background-color: #007bff;
-            color: white;
-            border: none;
-            cursor: pointer;
+        #backupAlbum {
+            right: 10px;
+        }
+        #deleteSelected {
+            right: 120px;
+        }
+        #downloadSelected {
+            right: 230px;
+        }
+        #setCover {
+            right: 340px;
         }
         /* 模态窗口（lightbox）样式 */
         .modal {
@@ -118,23 +120,28 @@
         }
         .delete-btn {
             position: absolute;
-            top: 0;
-            left: 0;
-            background-color: red;
-            color: white;
+            top: 5px;
+            left: 5px;
+            background-color: transparent;
+            color: red;
+            font-size: 20px;
             border: none;
             cursor: pointer;
             z-index: 10; /* 确保删除按钮在最上层 */
         }
         .select-btn {
             position: absolute;
-            top: 0;
-            right: 0;
-            background-color: blue;
-            color: white;
+            top: 5px;
+            right: 5px;
+            background-color: transparent;
+            color: blue;
+            font-size: 20px;
             border: none;
             cursor: pointer;
             z-index: 10; /* 确保选中按钮在最上层 */
+        }
+        .selected {
+            color: green;
         }
         .modal-open .delete-btn,
         .modal-open .select-btn {
@@ -207,7 +214,7 @@
                 imgContainer.appendChild(img);
 
                 let deleteButton = document.createElement('button');
-                deleteButton.textContent = '删除';
+                deleteButton.innerHTML = '&times;';
                 deleteButton.classList.add('delete-btn');
                 deleteButton.onclick = function() {
                     if (confirm('确定要删除这张图片吗？')) {
@@ -217,15 +224,15 @@
                 imgContainer.appendChild(deleteButton);
 
                 let selectButton = document.createElement('button');
-                selectButton.textContent = '选中';
+                selectButton.innerHTML = 'o';
                 selectButton.classList.add('select-btn');
                 selectButton.onclick = function() {
                     if (selectedPhotos.includes(url)) {
                         selectedPhotos = selectedPhotos.filter(item => item !== url);
-                        selectButton.style.backgroundColor = 'blue';
+                        selectButton.classList.remove('selected');
                     } else {
                         selectedPhotos.push(url);
-                        selectButton.style.backgroundColor = 'green';
+                        selectButton.classList.add('selected');
                     }
                 };
                 imgContainer.appendChild(selectButton);
