@@ -31,6 +31,8 @@
             height: auto;
             display: block;
             border-radius: 10px;
+            opacity: 0; /* Initially hide images */
+            transition: opacity 0.5s ease-in-out;
         }
         #bigimg {
             display: none;
@@ -60,8 +62,11 @@
         @media (min-width: 769px) and (max-width: 1024px) {
             .grid { column-count: 3; }
         }
-        @media (min-width: 1025px) {
-            .grid { column-count: 4; }
+        @media (min-width: 1025px) and (max-width: 2048px) {
+            .grid { column-count: 3; }
+        }
+        @media (min-width: 2049px) {
+            .grid { column-count: 5; }
         }
     </style>
 </head>
@@ -91,13 +96,37 @@
         function renderImages(imgList) {
             const grid = document.querySelector('.grid');
             grid.innerHTML = imgList.map(img => 
-                `<div class="grid-item"><img onclick="showBigImg(this)" data-original="${img}" src="${img}"></div>`
+                `<div class="grid-item"><img data-src="${img}" src="loading.gif" alt="Loading..."></div>`
             ).join('');
+            lazyLoadImages();
+        }
+
+        function lazyLoadImages() {
+            const images = document.querySelectorAll('.grid-item img');
+            const config = {
+                rootMargin: '50px 0px', // Load images 50px before they enter the viewport
+                threshold: 0.01
+            };
+
+            let observer = new IntersectionObserver(function(entries, self) {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        const img = entry.target;
+                        img.src = img.dataset.src;
+                        img.onload = () => img.style.opacity = 1;
+                        self.unobserve(entry.target);
+                    }
+                });
+            }, config);
+
+            images.forEach(image => {
+                observer.observe(image);
+            });
         }
 
         function showBigImg(img) {
             const bigImg = document.getElementById('bigimg');
-            const imgUrl = img.getAttribute('data-original');
+            const imgUrl = img.getAttribute('src');
             bigImg.innerHTML = '<img src="' + imgUrl + '">';
             bigImg.style.display = 'block';
         }
