@@ -16,34 +16,49 @@
         #returnHome {
             position: fixed;
             top: 10px;
-            right: 250px; /* 根据备份相册按钮和批量删除按钮的宽度调整，使其平齐 */
-            padding: 10px 20px; /* 与备份相册按钮的内边距相同 */
+            right: 350px; /* 根据其他按钮的位置调整 */
+            padding: 10px 20px;
             background-color: #28a745; /* 绿色背景 */
             color: white;
             border: none;
             cursor: pointer;
+            z-index: 1000; /* 确保按钮在最上层 */
         }
         /* 备份按钮样式 */
         #backupAlbum {
             position: fixed;
             top: 10px;
-            right: 130px;
+            right: 230px;
             padding: 10px 20px;
             background-color: #007bff;
             color: white;
             border: none;
             cursor: pointer;
+            z-index: 1000; /* 确保按钮在最上层 */
         }
         /* 批量删除按钮样式 */
         #batchDelete {
             position: fixed;
             top: 10px;
-            right: 10px;
+            right: 110px;
             padding: 10px 20px;
             background-color: #dc3545; /* 红色背景 */
             color: white;
             border: none;
             cursor: pointer;
+            z-index: 1000; /* 确保按钮在最上层 */
+        }
+        /* 上传图片按钮样式 */
+        #submitPhoto {
+            position: fixed;
+            top: 10px;
+            right: 10px;
+            padding: 10px 20px;
+            background-color: #17a2b8; /* 青色背景 */
+            color: white;
+            border: none;
+            cursor: pointer;
+            z-index: 1000; /* 确保按钮在最上层 */
         }
         /* 模态窗口（lightbox）样式 */
         .modal {
@@ -137,10 +152,10 @@
     <button id="returnHome">返回首页</button>
     <button id="backupAlbum">备份相册</button>
     <button id="batchDelete">批量删除</button>
+    <button id="submitPhoto">批量添加图片</button>
     <h1 id="albumTitle"></h1>
     <div id="photoWall"></div>
-    <textarea id="photoUrl" placeholder="输入图片URL地址，每行一个；无输入请选择图片上传：" cols="60" rows="5"></textarea>
-    <button id="submitPhoto">批量添加图片</button>
+    <textarea id="photoUrl" placeholder="输入图片URL地址，每行一个；无输入请选择图片上传：" cols="60" rows="5" style="margin-top: 50px;"></textarea>
 
     <div id="myModal" class="modal">
         <span class="close">×</span>
@@ -253,6 +268,10 @@
             if (selectedPhotos.length > 0 && confirm('确定要删除选中的图片吗？')) {
                 deletePhotos(selectedPhotos);
             }
+        };
+
+        document.getElementById('submitPhoto').onclick = function() {
+            AsubmitPhoto();
         };
 
         getPhotos();
