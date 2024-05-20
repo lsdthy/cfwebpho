@@ -23,7 +23,6 @@
         }
         .directory-item {
             margin: 10px;
-            cursor: pointer;
             display: flex;
             align-items: center;
             width: calc(30% - 20px);
@@ -42,6 +41,7 @@
             font-size: 16px;
             color: white;
             font-weight: bold;
+            flex-grow: 1;
         }
         .delete-btn {
             padding: 5px 10px;
@@ -55,8 +55,22 @@
         .delete-btn:hover {
             background-color: darkred;
         }
-        .view-option {
-            margin-right: 10px;
+        .view-btn {
+            padding: 5px 10px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-left: 5px;
+        }
+        .view-wall {
+            background-color: yellow;
+        }
+        .view-manage {
+            background-color: blue;
+            color: white;
+        }
+        .view-btn:hover {
+            opacity: 0.8;
         }
         #newDirectory {
             margin: 10px;
@@ -119,17 +133,23 @@
                 name.textContent = dir;
                 div.appendChild(name);
 
-                let viewOption = document.createElement('select');
-                viewOption.classList.add('view-option');
-                let option1 = document.createElement('option');
-                option1.value = 'wall';
-                option1.textContent = '照片墙';
-                let option2 = document.createElement('option');
-                option2.value = 'manage';
-                option2.textContent = '相册管理';
-                viewOption.appendChild(option1);
-                viewOption.appendChild(option2);
-                div.appendChild(viewOption);
+                let viewWallBtn = document.createElement('button');
+                viewWallBtn.classList.add('view-btn', 'view-wall');
+                viewWallBtn.textContent = '照片墙';
+                viewWallBtn.onclick = function(event) {
+                    event.stopPropagation(); // 阻止事件冒泡
+                    window.location.href = `./listdbwall.html?username=${username}&directory=${dir}`;
+                };
+                div.appendChild(viewWallBtn);
+
+                let viewManageBtn = document.createElement('button');
+                viewManageBtn.classList.add('view-btn', 'view-manage');
+                viewManageBtn.textContent = '相册管理';
+                viewManageBtn.onclick = function(event) {
+                    event.stopPropagation(); // 阻止事件冒泡
+                    window.location.href = `./pldb-manage.html?username=${username}&directory=${dir}`;
+                };
+                div.appendChild(viewManageBtn);
 
                 let deleteButton = document.createElement('button');
                 deleteButton.classList.add('delete-btn');
@@ -139,15 +159,6 @@
                     deleteDirectory(dir);
                 };
                 div.appendChild(deleteButton);
-
-                div.addEventListener('click', function() {
-                    const selectedOption = viewOption.value;
-                    if (selectedOption === 'wall') {
-                        window.location.href = `./listdbwall.html?username=${username}&directory=${dir}`;
-                    } else {
-                        window.location.href = `./pldb-manage.html?username=${username}&directory=${dir}`;
-                    }
-                });
 
                 directoryList.appendChild(div);
             });
