@@ -16,15 +16,16 @@
         #returnHome {
             position: fixed;
             top: 10px;
-            right: 380px; /* 根据备份相册按钮的宽度调整，使其与备份相册按钮平齐 */
-            padding: 10px 20px; /* 与备份相册按钮的内边距相同 */
+            left: 10px;
+            padding: 10px 20px;
             background-color: #28a745; /* 绿色背景 */
             color: white;
             border: none;
             cursor: pointer;
+            z-index: 100;
         }
-        /* 备份按钮样式 */
-        #backupAlbum, #deleteSelected, #downloadSelected, #setCover {
+        /* 操作按钮样式 */
+        #backupAlbum, #deleteSelected, #downloadSelected {
             position: fixed;
             top: 10px;
             padding: 10px 20px;
@@ -32,18 +33,18 @@
             color: white;
             border: none;
             cursor: pointer;
+            z-index: 100;
         }
         #backupAlbum {
             right: 10px;
         }
         #deleteSelected {
-            right: 120px;
+            right: 130px;
+            background-color: red;
         }
         #downloadSelected {
-            right: 230px;
-        }
-        #setCover {
-            right: 340px;
+            right: 250px;
+            background-color: orange;
         }
         /* 模态窗口（lightbox）样式 */
         .modal {
@@ -116,16 +117,19 @@
             overflow: hidden; /* 隐藏溢出的文本 */
         }
         .img-container:hover img {
-            box-shadow: inset 0 0 0 5px green; /* 鼠标悬停时添加金色边框 */
+            box-shadow: inset 0 0 0 5px green; /* 鼠标悬停时添加绿色边框 */
         }
         .delete-btn {
             position: absolute;
             top: 5px;
             left: 5px;
-            background-color: transparent;
-            color: red;
-            font-size: 20px;
+            background-color: red;
+            color: white;
+            font-size: 16px;
             border: none;
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
             cursor: pointer;
             z-index: 10; /* 确保删除按钮在最上层 */
         }
@@ -133,15 +137,18 @@
             position: absolute;
             top: 5px;
             right: 5px;
-            background-color: transparent;
-            color: blue;
-            font-size: 20px;
+            background-color: blue;
+            color: white;
+            font-size: 16px;
             border: none;
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
             cursor: pointer;
             z-index: 10; /* 确保选中按钮在最上层 */
         }
         .selected {
-            color: green;
+            background-color: green; /* 选中后的颜色 */
         }
         .modal-open .delete-btn,
         .modal-open .select-btn {
@@ -164,7 +171,6 @@
     <button id="backupAlbum">备份相册</button>
     <button class="operation-btn" id="deleteSelected">删除选中</button>
     <button class="operation-btn" id="downloadSelected">下载选中</button>
-    <button class="operation-btn" id="setCover">设为封面</button>
     <h1 id="albumTitle"></h1>
     <div id="photoWall"></div>
     <textarea id="photoUrl" placeholder="输入图片URL地址，每行一个；无输入请选择图片上传：" cols="60" rows="5"></textarea>
@@ -179,6 +185,10 @@
         const params = new URLSearchParams(window.location.search);
         const username = params.get('username');
         const dirName = params.get('directory');
+        if (!dirName) {
+            alert('无效的目录名');
+            window.location.href = '/';
+        }
         document.getElementById('albumTitle').textContent = `${dirName} 相册`;
 
         let photoUrls = [];
@@ -190,7 +200,15 @@
                 body: JSON.stringify({ username, dirName }),
                 headers: { 'Content-Type': 'application/json' }
             });
-            photoUrls = await response.json();
+            if (response.ok) {
+                photoUrls = await response.json();
+                renderPhotos();
+            } else {
+                console.error('Failed to fetch photos');
+            }
+        }
+
+        function renderPhotos() {
             const photoWall = document.getElementById('photoWall');
             photoWall.innerHTML = '';
             photoUrls.forEach(url => {
@@ -214,7 +232,7 @@
                 imgContainer.appendChild(img);
 
                 let deleteButton = document.createElement('button');
-                deleteButton.innerHTML = '&times;';
+                deleteButton.textContent = 'x';
                 deleteButton.classList.add('delete-btn');
                 deleteButton.onclick = function() {
                     if (confirm('确定要删除这张图片吗？')) {
@@ -224,7 +242,7 @@
                 imgContainer.appendChild(deleteButton);
 
                 let selectButton = document.createElement('button');
-                selectButton.innerHTML = 'o';
+                selectButton.textContent = 'o';
                 selectButton.classList.add('select-btn');
                 selectButton.onclick = function() {
                     if (selectedPhotos.includes(url)) {
@@ -281,24 +299,6 @@
             alert('选中图片已下载');
         }
 
-        async function setCoverPhoto() {
-            const coverPhotoUrl = selectedPhotos[0]; // 选中第一张图片作为封面
-            if (coverPhotoUrl) {
-                const response = await fetch('./db/setCover', {
-                    method: 'POST',
-                    body: JSON.stringify({ username, dirName, coverPhotoUrl }),
-                    headers: { 'Content-Type': 'application/json' }
-                });
-                if (response.ok) {
-                    alert('封面设置成功');
-                } else {
-                    alert('封面设置失败，请稍后重试');
-                }
-            } else {
-                alert('请先选中一张图片');
-            }
-        }
-
         document.getElementById('backupAlbum').onclick = function() {
             const photoUrlsString = photoUrls.join('\n').replace(/(^\s*\n)|(\n\s*$)/g, '');
             const blob = new Blob([photoUrlsString], { type: 'text/plain' });
@@ -312,7 +312,6 @@
 
         document.getElementById('deleteSelected').onclick = bulkDeletePhotos;
         document.getElementById('downloadSelected').onclick = bulkDownloadPhotos;
-        document.getElementById('setCover').onclick = setCoverPhoto;
 
         getPhotos();
         // 返回首页按钮的点击事件
