@@ -12,43 +12,32 @@
             padding: 0;
             font-family: Arial, sans-serif;
         }
-        /* 返回首页按钮样式 */
+        /* 顶部按钮样式 */
+        .top-buttons {
+            position: fixed;
+            top: 10px;
+            left: 10px;
+            display: flex;
+            gap: 10px;
+        }
+        .top-buttons button {
+            padding: 10px 20px;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
         #returnHome {
-            position: fixed;
-            top: 10px;
-            right: 220px; /* 根据备份相册按钮的宽度调整，使其与备份相册按钮平齐 */
-            padding: 10px 20px; /* 与备份相册按钮的内边距相同 */
             background-color: #28a745; /* 绿色背景 */
-            color: white;
-            border: none;
-            cursor: pointer;
         }
-        /* 备份按钮样式 */
         #backupAlbum {
-            position: fixed;
-            top: 10px;
-            right: 120px;
-            padding: 10px 20px;
-            background-color: #007bff;
-            color: white;
-            border: none;
-            cursor: pointer;
+            background-color: #007bff; /* 蓝色背景 */
         }
-        /* 批量删除和下载按钮样式 */
-        #batchDelete, #batchDownload {
-            position: fixed;
-            top: 10px;
-            right: 10px;
-            padding: 10px 20px;
-            background-color: #dc3545;
-            color: white;
-            border: none;
-            cursor: pointer;
-            margin-left: 10px;
+        #batchDelete {
+            background-color: #dc3545; /* 红色背景 */
         }
         #batchDownload {
-            background-color: #ffc107;
-            right: 120px;
+            background-color: #ffc107; /* 黄色背景 */
+            color: black;
         }
         /* 模态窗口（lightbox）样式 */
         .modal {
@@ -126,14 +115,17 @@
         .delete-btn, .select-btn {
             position: absolute;
             top: 0;
-            background-color: red;
             color: white;
             border: none;
             cursor: pointer;
             z-index: 10; /* 确保按钮在最上层 */
         }
+        .delete-btn {
+            left: 0;
+            background-color: red;
+        }
         .select-btn {
-            left: 20px;
+            right: 0;
             background-color: blue;
         }
         .selected {
@@ -151,11 +143,13 @@
     </style>
 </head>
 <body>
-    <!-- 添加返回首页按钮 -->
-    <button id="returnHome">返回首页</button>
-    <button id="backupAlbum">备份相册</button>
-    <button id="batchDelete">批量删除</button>
-    <button id="batchDownload">批量下载</button>
+    <!-- 顶部按钮 -->
+    <div class="top-buttons">
+        <button id="returnHome">返回首页</button>
+        <button id="backupAlbum">备份相册</button>
+        <button id="batchDelete">批量删除</button>
+        <button id="batchDownload">批量下载</button>
+    </div>
     <h1 id="albumTitle"></h1>
     <div id="photoWall"></div>
     <textarea id="photoUrl" placeholder="输入图片URL地址，每行一个；无输入请选择图片上传：" cols="60" rows="5"></textarea>
@@ -304,7 +298,7 @@
         };
 
         getPhotos();
-        
+
         // 返回首页按钮的点击事件
         document.getElementById('returnHome').onclick = function() {
             window.location.href = '/'; // 这里的 '/' 表示网站的根目录，根据实际情况修改
