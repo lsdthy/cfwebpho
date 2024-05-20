@@ -12,11 +12,11 @@
             padding: 0;
             font-family: Arial, sans-serif;
         }
-           /* 返回首页按钮样式 */
+        /* 返回首页按钮样式 */
         #returnHome {
             position: fixed;
             top: 10px;
-            right: 150px; /* 根据备份相册按钮的宽度调整，使其与备份相册按钮平齐 */
+            right: 220px; /* 根据备份相册按钮的宽度调整，使其与备份相册按钮平齐 */
             padding: 10px 20px; /* 与备份相册按钮的内边距相同 */
             background-color: #28a745; /* 绿色背景 */
             color: white;
@@ -27,12 +27,28 @@
         #backupAlbum {
             position: fixed;
             top: 10px;
-            right: 10px;
+            right: 120px;
             padding: 10px 20px;
             background-color: #007bff;
             color: white;
             border: none;
             cursor: pointer;
+        }
+        /* 批量删除和下载按钮样式 */
+        #batchDelete, #batchDownload {
+            position: fixed;
+            top: 10px;
+            right: 10px;
+            padding: 10px 20px;
+            background-color: #dc3545;
+            color: white;
+            border: none;
+            cursor: pointer;
+            margin-left: 10px;
+        }
+        #batchDownload {
+            background-color: #ffc107;
+            right: 120px;
         }
         /* 模态窗口（lightbox）样式 */
         .modal {
@@ -69,7 +85,7 @@
             text-decoration: none;
             cursor: pointer;
         }
-        /* 图片和删除按钮的容器样式 */
+        /* 图片和按钮容器样式 */
         .img-container {
             display: inline-block;
             position: relative;
@@ -105,20 +121,23 @@
             overflow: hidden; /* 隐藏溢出的文本 */
         }
         .img-container:hover img {
-            box-shadow: inset 0 0 0 5px green; /* 鼠标悬停时添加金色边框 opacity: 0.9; /* 鼠标悬停时图片半透明 */*/
+            box-shadow: inset 0 0 0 5px green; /* 鼠标悬停时添加绿色边框 */
         }
-        .delete-btn {
+        .delete-btn, .select-btn {
             position: absolute;
             top: 0;
-            left: 0;
             background-color: red;
             color: white;
             border: none;
             cursor: pointer;
-            z-index: 10; /* 确保删除按钮在最上层 */
+            z-index: 10; /* 确保按钮在最上层 */
         }
-        .modal-open .delete-btn {
-            display: none; /* 当模态窗口打开时隐藏删除按钮 */
+        .select-btn {
+            left: 20px;
+            background-color: blue;
+        }
+        .selected {
+            box-shadow: inset 0 0 0 5px blue; /* 选中时添加蓝色边框 */
         }
         @media (max-width: 768px) {
             .modal-content {
@@ -135,6 +154,8 @@
     <!-- 添加返回首页按钮 -->
     <button id="returnHome">返回首页</button>
     <button id="backupAlbum">备份相册</button>
+    <button id="batchDelete">批量删除</button>
+    <button id="batchDownload">批量下载</button>
     <h1 id="albumTitle"></h1>
     <div id="photoWall"></div>
     <textarea id="photoUrl" placeholder="输入图片URL地址，每行一个；无输入请选择图片上传：" cols="60" rows="5"></textarea>
@@ -152,6 +173,7 @@
         document.getElementById('albumTitle').textContent = `${dirName} 相册`;
 
         let photoUrls = [];
+        let selectedPhotos = new Set();
 
         async function getPhotos() {
             const response = await fetch(`./db/getdbab`, {
@@ -168,13 +190,11 @@
 
                 let imgText = document.createElement('div');
                 imgText.classList.add('img-text');
-                imgText.textContent = url;//.split('/').pop(); // 显示图片的链接文本
+                imgText.textContent = url;
                 imgContainer.appendChild(imgText);
 
                 let img = document.createElement('img');
                 img.src = url;
-                img.style.width = '100%';
-                img.style.height = '100%';
                 img.onclick = function() {
                     document.body.classList.add('modal-open');
                     document.getElementById('myModal').style.display = "block";
@@ -183,7 +203,7 @@
                 imgContainer.appendChild(img);
 
                 let deleteButton = document.createElement('button');
-                deleteButton.textContent = '删除';
+                deleteButton.textContent = 'x';
                 deleteButton.classList.add('delete-btn');
                 deleteButton.onclick = function() {
                     if (confirm('确定要删除这张图片吗？')) {
@@ -191,6 +211,20 @@
                     }
                 };
                 imgContainer.appendChild(deleteButton);
+
+                let selectButton = document.createElement('button');
+                selectButton.textContent = 'o';
+                selectButton.classList.add('select-btn');
+                selectButton.onclick = function() {
+                    if (selectedPhotos.has(url)) {
+                        selectedPhotos.delete(url);
+                        imgContainer.classList.remove('selected');
+                    } else {
+                        selectedPhotos.add(url);
+                        imgContainer.classList.add('selected');
+                    }
+                };
+                imgContainer.appendChild(selectButton);
 
                 photoWall.appendChild(imgContainer);
             });
@@ -211,6 +245,27 @@
             }
         }
 
+        document.getElementById('batchDelete').onclick = async function() {
+            if (confirm('确定要删除选中的图片吗？')) {
+                for (let photoUrl of selectedPhotos) {
+                    await deletePhoto(photoUrl);
+                }
+                selectedPhotos.clear();
+                window.location.reload();
+            }
+        };
+
+        document.getElementById('batchDownload').onclick = function() {
+            selectedPhotos.forEach(photoUrl => {
+                const a = document.createElement('a');
+                a.href = photoUrl;
+                a.download = photoUrl.split('/').pop();
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+            });
+        };
+
         var modal = document.getElementById('myModal');
         var span = document.getElementsByClassName("close")[0];
 
@@ -219,7 +274,7 @@
             modal.style.display = "none";
         }
 
-        async function AsubmitPhoto() {
+        async function submitPhoto() {
             const photoUrls = document.getElementById('photoUrl').value.trim().split('\n');
             const validPhotoUrls = photoUrls.filter(url => url.trim() !== '');
             const photoUrlsString = validPhotoUrls.join('\n');
@@ -235,6 +290,8 @@
             }
         }
 
+        document.getElementById('submitPhoto').onclick = submitPhoto;
+
         document.getElementById('backupAlbum').onclick = function() {
             const photoUrlsString = photoUrls.join('\n').replace(/(^\s*\n)|(\n\s*$)/g, '');
             const blob = new Blob([photoUrlsString], { type: 'text/plain' });
@@ -247,10 +304,11 @@
         };
 
         getPhotos();
-          // 返回首页按钮的点击事件
-    document.getElementById('returnHome').onclick = function() {
-        window.location.href = '/'; // 这里的 '/' 表示网站的根目录，根据实际情况修改
-    };
+        
+        // 返回首页按钮的点击事件
+        document.getElementById('returnHome').onclick = function() {
+            window.location.href = '/'; // 这里的 '/' 表示网站的根目录，根据实际情况修改
+        };
     </script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/browser-image-compression/2.0.2/browser-image-compression.min.js"></script>
     <script src="album-management.js"></script>
