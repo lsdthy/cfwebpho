@@ -15,15 +15,17 @@
             max-width: 1200px;
             margin: auto;
             padding: 20px;
-            position: relative;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
         }
         .grid-item {
-            width: 300px; /* 设置图片的宽度，可调整 */
+            flex: 1 1 calc(33.333% - 10px);
             background: #fff;
             border-radius: 10px;
             box-shadow: 0 2px 5px rgba(0, 0, 0, 0.15);
             overflow: hidden;
-            position: absolute; /* 瀑布流布局关键 */
+            position: relative;
         }
         .grid-item img {
             width: 100%;
@@ -38,7 +40,6 @@
             width: 100%;
             height: 100%;
             background-color: rgba(0, 0, 0, 0.5);
-            z-index: 100;
         }
         #bigimg img {
             position: absolute;
@@ -57,77 +58,33 @@
     <div id="bigimg" onclick="closeBigImg();"></div>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
     <script>
-        document.addEventListener("DOMContentLoaded", function() {
+        const params = new URLSearchParams(window.location.search);
+        const username = params.get('username');
+        const dirName = params.get('directory');
+        var imgList = [];
+
+        async function fetchPhotos() {
+            const response = await fetch(`./db/getdbab`, {
+                method: 'POST',
+                body: JSON.stringify({ username, dirName }),
+                headers: { 'Content-Type': 'application/json' }
+            });
+            if (response.ok) {
+                imgList = await response.json();
+                renderImages();
+            } else {
+                console.error('Failed to fetch photos');
+            }
+        }
+
+        function renderImages() {
             const grid = document.querySelector('.grid');
-            const imgWidth = 300; // 图片列宽度
-            let imgList = [];
-
-            async function fetchPhotos() {
-                try {
-                    const response = await fetch(`./db/getdbab`, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ username: 'exampleUser', dirName: 'exampleDir' }) // 根据服务器API调整
-                    });
-                    if (response.ok) {
-                        imgList = await response.json();
-                        renderImages();
-                    } else {
-                        throw new Error('Failed to fetch photos');
-                    }
-                } catch (error) {
-                    console.error(error.message);
-                }
+            let str = '';
+            for (let i = 0; i < imgList.length; i++) {
+                str += `<div class="grid-item"><img onclick="showBigImg(this)" data-original="${imgList[i]}" src="${imgList[i]}"></div>`;
             }
-
-            function renderImages() {
-                let str = '';
-                imgList.forEach((img, index) => {
-                    str += `<div class="grid-item"><img data-src="${img.url}" alt="Photo" onclick="showBigImg(this)" data-original="${img.url}"></div>`; // 确保图片属性正确
-                });
-                grid.innerHTML = str;
-                initiateMasonry();
-                lazyLoadImages();
-            }
-
-            function initiateMasonry() {
-                let column = parseInt(window.innerWidth / imgWidth);
-                let heightArr = new Array(column).fill(0);
-                document.querySelectorAll('.grid-item img').forEach(img => {
-                    img.onload = () => {
-                        let minHeight = Math.min(...heightArr);
-                        let minIndex = heightArr.indexOf(minHeight);
-                        img.parentElement.style.top = `${minHeight}px`;
-                        img.parentElement.style.left = `${minIndex * imgWidth}px`;
-                        heightArr[minIndex] += img.offsetHeight;
-                    };
-                });
-            }
-
-            function lazyLoadImages() {
-                const imgs = document.querySelectorAll('img[data-src]');
-                const observer = new IntersectionObserver((entries, observer) => {
-                    entries.forEach(entry => {
-                        if (entry.isIntersecting) {
-                            const img = entry.target;
-                            img.src = img.getAttribute('data-src');
-                            img.removeAttribute('data-src');
-                            observer.unobserve(img);
-                        }
-                    });
-                }, {
-                    rootMargin: '0px',
-                    threshold: 0.1
-                });
-
-                imgs.forEach(img => {
-                    observer.observe(img);
-                });
-            }
-
-            window.addEventListener('resize', initiateMasonry);
-            fetchPhotos();
-        });
+            grid.innerHTML = str;
+        }
 
         function showBigImg(img) {
             const bigImg = document.getElementById('bigimg');
@@ -141,6 +98,8 @@
             bigImg.style.display = 'none';
             bigImg.innerHTML = '';
         }
+
+        fetchPhotos();
     </script>
 </body>
 </html>
