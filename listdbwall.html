@@ -53,22 +53,8 @@
             object-fit: contain;
             transform: translate(-50%, -50%);
         }
-        @media (max-width: 480px) {
-            .grid-item { width: calc(100% - 20px); }
-        }
-        @media (min-width: 481px) and (max-width: 768px) {
-            .grid-item { width: calc(50% - 20px); }
-        }
-        @media (min-width: 769px) and (max-width: 1024px) {
-            .grid-item { width: calc(33.333% - 20px); }
-        }
-        @media (min-width: 1025px) and (max-width: 2048px) {
-            .grid-item { width: calc(25% - 20px); }
-        }
-        @media (min-width: 2049px) {
-            .grid-item { width: calc(14.285% - 20px); }
-        }
     </style>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/masonry/4.2.2/masonry.pkgd.min.css">
 </head>
 <body>
     <div class="grid"></div>
@@ -76,10 +62,13 @@
         <img src="" alt="Big Image">
     </div>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/imagesloaded/4.1.4/imagesloaded.pkgd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/masonry/4.2.2/masonry.pkgd.min.js"></script>
     <script>
         const params = new URLSearchParams(window.location.search);
         const username = params.get('username');
         const dirName = params.get('directory');
+        let msnry;
 
         async function fetchPhotos() {
             const response = await fetch(`./db/getdbab`, {
@@ -101,7 +90,15 @@
             grid.innerHTML = imgList.map(img => 
                 `<div class="grid-item"><img src="loading.gif" data-src="${img}" alt="Photo" onclick="expandImage(this)"></div>`
             ).join('');
-            lazyLoadImages();
+            imagesLoaded(grid, function() {
+                msnry = new Masonry(grid, {
+                    itemSelector: '.grid-item',
+                    columnWidth: '.grid-item',
+                    percentPosition: true
+                });
+                grid.style.display = 'flex'; // Show grid after layout
+                lazyLoadImages();
+            });
         }
 
         function preloadImages(imgUrls) {
@@ -118,7 +115,10 @@
                     if (entry.isIntersecting) {
                         const img = entry.target;
                         img.src = img.dataset.src;
-                        img.onload = () => img.style.opacity = 1;
+                        img.onload = () => {
+                            img.style.opacity = 1;
+                            msnry.layout(); // Re-layout Masonry after each image load
+                        };
                         observer.unobserve(img);
                     }
                 });
