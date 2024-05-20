@@ -60,26 +60,30 @@
         document.addEventListener("DOMContentLoaded", function() {
             const grid = document.querySelector('.grid');
             const imgWidth = 300; // 图片列宽度
+            let imgList = [];
 
             async function fetchPhotos() {
-                const response = await fetch(`./db/getdbab`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' }
-                });
-                if (response.ok) {
-                    imgList = await response.json();
-                    renderImages();
-                } else {
-                    console.error('Failed to fetch photos');
+                try {
+                    const response = await fetch(`./db/getdbab`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ username: 'exampleUser', dirName: 'exampleDir' }) // 根据服务器API调整
+                    });
+                    if (response.ok) {
+                        imgList = await response.json();
+                        renderImages();
+                    } else {
+                        throw new Error('Failed to fetch photos');
+                    }
+                } catch (error) {
+                    console.error(error.message);
                 }
             }
 
             function renderImages() {
                 let str = '';
                 imgList.forEach((img, index) => {
-                    if (index < 40) { // 初始仅渲染前40张图片
-                        str += `<div class="grid-item"><img data-src="${img}" alt="Photo"></div>`;
-                    }
+                    str += `<div class="grid-item"><img data-src="${img.url}" alt="Photo" onclick="showBigImg(this)" data-original="${img.url}"></div>`; // 确保图片属性正确
                 });
                 grid.innerHTML = str;
                 initiateMasonry();
@@ -124,6 +128,13 @@
             window.addEventListener('resize', initiateMasonry);
             fetchPhotos();
         });
+
+        function showBigImg(img) {
+            const bigImg = document.getElementById('bigimg');
+            const imgUrl = img.getAttribute('data-original');
+            bigImg.innerHTML = `<img src="${imgUrl}">`;
+            bigImg.style.display = 'block';
+        }
 
         function closeBigImg() {
             const bigImg = document.getElementById('bigimg');
