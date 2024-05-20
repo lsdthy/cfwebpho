@@ -86,7 +86,7 @@
 <body>
     <h1 id="welcomeMessage"></h1>
     <div id="directoryList"></div>
-    <textarea id="newDirectory" placeholder="输入目录名" cols="20" rows=2"></textarea>
+    <textarea id="newDirectory" placeholder="输入目录名" cols="20" rows="2"></textarea>
     <button onclick="createDirectory()">创建目录</button>
 
     <div>
@@ -131,7 +131,12 @@
                 div.appendChild(deleteButton);
 
                 div.addEventListener('click', function() {
-                    window.location.href = `./pldb-manage.html?username=${username}&directory=${dir}`;
+                    const selectedOption = document.querySelector('input[name="viewOption"]:checked').value;
+                    if (selectedOption === 'wall') {
+                        window.location.href = `./listdbwall.html?username=${username}&directory=${dir}`;
+                    } else {
+                        window.location.href = `./pldb-manage.html?username=${username}&directory=${dir}`;
+                    }
                 });
 
                 directoryList.appendChild(div);
