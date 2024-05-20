@@ -12,26 +12,25 @@
             font-family: Arial, sans-serif;
         }
         .grid {
-            position: relative;
-            width: 100%;
-            margin: auto;
+            column-count: 4;
+            column-gap: 10px;
             padding: 20px;
-            display: flex;
-            flex-wrap: wrap;
-            justify-content: space-around; /* Adjusts spacing to better fill the space */
+            width: 100%;
         }
         .grid-item {
             background: #fff;
             border-radius: 10px;
             box-shadow: 0 2px 5px rgba(0, 0, 0, 0.15);
-            overflow: hidden;
-            position: relative; /* Changed from absolute to relative */
-            margin-bottom: 10px; /* Space between rows */
+            margin-bottom: 10px;
+            break-inside: avoid; /* Prevents column break within an item */
+            display: inline-block;
+            width: 100%;
         }
         .grid-item img {
             width: 100%;
             height: auto;
             display: block;
+            border-radius: 10px;
         }
         #bigimg {
             display: none;
@@ -51,21 +50,6 @@
             left: 50%;
             object-fit: contain;
             transform: translate(-50%, -50%);
-        }
-        @media (max-width: 600px) {
-            .grid-item {
-                width: 100%;
-            }
-        }
-        @media (min-width: 601px) and (max-width: 900px) {
-            .grid-item {
-                width: 50%;
-            }
-        }
-        @media (min-width: 901px) {
-            .grid-item {
-                width: 25%;
-            }
         }
     </style>
 </head>
@@ -95,23 +79,8 @@
         function renderImages(imgList) {
             const grid = document.querySelector('.grid');
             grid.innerHTML = imgList.map(img => 
-                `<div class="grid-item" style="width:${getImageWidth()}"><img data-original="${img}" src="${img}"></div>`
+                `<div class="grid-item"><img onclick="showBigImg(this)" data-original="${img}" src="${img}"></div>`
             ).join('');
-            adjustItems();
-        }
-
-        function getImageWidth() {
-            if (window.innerWidth < 600) {
-                return '100%'; // 1 column
-            } else if (window.innerWidth < 900) {
-                return '50%'; // 2 columns
-            } else {
-                return '25%'; // 4 columns
-            }
-        }
-
-        function adjustItems() {
-            $('.grid-item').css('width', getImageWidth()); // Ensure width adjustment after resize
         }
 
         function showBigImg(img) {
@@ -128,9 +97,21 @@
         }
 
         $(window).resize(function () {
-            adjustItems();
+            adjustGridColumnCount();
         });
 
+        function adjustGridColumnCount() {
+            const gridWidth = $('.grid').width();
+            if (gridWidth < 600) {
+                $('.grid').css('column-count', 1);
+            } else if (gridWidth < 900) {
+                $('.grid').css('column-count', 2);
+            } else {
+                $('.grid').css('column-count', 4);
+            }
+        }
+
+        adjustGridColumnCount();
         fetchPhotos();
     </script>
 </body>
