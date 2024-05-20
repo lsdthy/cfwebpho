@@ -90,7 +90,7 @@
             if (response.ok) {
                 const imgList = await response.json();
                 renderImages(imgList);
-                preloadImages(imgList.slice(0, 5)); // Preload the first 5 images
+                preloadImages(imgList.slice(0, 50)); // Preload the first 50 images
             } else {
                 console.error('Failed to fetch photos');
             }
