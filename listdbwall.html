@@ -1,170 +1,135 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="zh-CN">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Document</title>
-  <style>
-    body {
-      background: linear-gradient(90deg, #ffd7e4 0%, #c8f1ff 100%);
-      overflow-x: hidden;
-    }
-    ::-webkit-scrollbar {
-      width: 8px;
-      height: 8px;
-    }
-    ::-webkit-scrollbar-corner {
-      background-color: transparent;
-    }
-    ::-webkit-scrollbar-thumb {
-      background-color: #49b1f5;
-      background-image: -webkit-linear-gradient(45deg, hsla(0, 0%, 100%, .4) 25%, transparent 0, transparent 50%, hsla(0, 0%, 100%, .4) 0, hsla(0, 0%, 100%, .4) 75%, transparent 0, transparent);
-      border-radius: 2em;
-    }
-    ::-webkit-scrollbar-track {
-      background-color: rgba(73, 177, 245, .2);
-      border-radius: 2em;
-    }
-    .box {
-      position: relative;
-    }
-    img {
-      width: 200px;
-      height: auto;
-      padding: 5px;
-      margin-left: 1.25%;
-      border-radius: 20px;
-    }
-    #bigimg {
-      display: none;
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background-color: rgba(0, 0, 0, 0.5);
-    }
-    #bigimg img {
-      position: absolute;
-      width: 90%;
-      height: 90%;
-      top: 50%;
-      left: 50%;
-      object-fit: contain;
-      transform: translate(-50%, -50%);
-    }
-    .nav-button {
-      position: absolute;
-      top: 50%;
-      transform: translateY(-50%);
-      background-color: rgba(0, 0, 0, 0.5);
-      color: white;
-      border: none;
-      padding: 10px;
-      cursor: pointer;
-      z-index: 10;
-    }
-    .nav-button.left {
-      left: 10px;
-    }
-    .nav-button.right {
-      right: 10px;
-    }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>照片墙</title>
+    <style>
+        body {
+            background: linear-gradient(90deg, #ffd7e4 0%, #c8f1ff 100%);
+            margin: 0;
+            padding: 0;
+            font-family: Arial, sans-serif;
+        }
+        .grid {
+            max-width: 1200px;
+            margin: auto;
+            padding: 20px;
+            position: relative;
+        }
+        .grid-item {
+            width: 300px; /* 设置图片的宽度，可调整 */
+            background: #fff;
+            border-radius: 10px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.15);
+            overflow: hidden;
+            position: absolute; /* 瀑布流布局关键 */
+        }
+        .grid-item img {
+            width: 100%;
+            height: auto;
+            display: block;
+        }
+        #bigimg {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 100;
+        }
+        #bigimg img {
+            position: absolute;
+            width: 90%;
+            height: 90%;
+            top: 50%;
+            left: 50%;
+            object-fit: contain;
+            transform: translate(-50%, -50%);
+        }
+    </style>
 </head>
 <body>
-  <div class="box"></div>
-  <!-- 放大遮罩层 -->
-  <div id="bigimg">
-    <button class="nav-button left" onclick="navigateBigImg(-1); event.stopPropagation();">&lt;</button>
-    <img>
-    <button class="nav-button right" onclick="navigateBigImg(1); event.stopPropagation();">&gt;</button>
-  </div>
-  <script src="https://apps.bdimg.com/libs/jquery/2.1.4/jquery.min.js"></script>
-  <script>
-    var imgList;
-    $.ajax({
-      url: "https://image.gincode.icu/api/manage/list",
-      async: false,
-      dataType: "json",
-      success: function(data) {
-        imgList = data; // 将请求的数据赋值给全局变量
-      }
-    });
+    <div class="grid"></div>
+    <!-- 放大遮罩层 -->
+    <div id="bigimg" onclick="closeBigImg();"></div>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            const grid = document.querySelector('.grid');
+            const imgWidth = 300; // 图片列宽度
 
-    var targetElement = document.querySelector('.box');
-    let str = '';
-    for (let i = 0; i < imgList.length; i++) {
-      if (imgList[i].name.indexOf(".mp4") > 0) continue;
-      str += '<img class="lazy" data-original="/file/' + imgList[i].name + '" src="" onclick="showBigImg(' + i + ')">';
-    }
-    targetElement.innerHTML = str;
+            async function fetchPhotos() {
+                const response = await fetch(`./db/getdbab`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' }
+                });
+                if (response.ok) {
+                    imgList = await response.json();
+                    renderImages();
+                } else {
+                    console.error('Failed to fetch photos');
+                }
+            }
 
-    // 瀑布流处理
-    function waterfallHandler() {
-      let imgWidth = $('img').outerWidth();
-      let column = parseInt($(window).width() / imgWidth);
-      let heightArr = Array(column).fill(0);
+            function renderImages() {
+                let str = '';
+                imgList.forEach((img, index) => {
+                    if (index < 40) { // 初始仅渲染前40张图片
+                        str += `<div class="grid-item"><img data-src="${img}" alt="Photo"></div>`;
+                    }
+                });
+                grid.innerHTML = str;
+                initiateMasonry();
+                lazyLoadImages();
+            }
 
-      $('img').each(function(index, item) {
-        let itemHeight = $(item).outerHeight();
-        let minHeight = Math.min(...heightArr);
-        let minIndex = heightArr.indexOf(minHeight);
+            function initiateMasonry() {
+                let column = parseInt(window.innerWidth / imgWidth);
+                let heightArr = new Array(column).fill(0);
+                document.querySelectorAll('.grid-item img').forEach(img => {
+                    img.onload = () => {
+                        let minHeight = Math.min(...heightArr);
+                        let minIndex = heightArr.indexOf(minHeight);
+                        img.parentElement.style.top = `${minHeight}px`;
+                        img.parentElement.style.left = `${minIndex * imgWidth}px`;
+                        heightArr[minIndex] += img.offsetHeight;
+                    };
+                });
+            }
 
-        $(item).css({
-          position: 'absolute',
-          top: minHeight + 'px',
-          left: minIndex * imgWidth + 'px'
+            function lazyLoadImages() {
+                const imgs = document.querySelectorAll('img[data-src]');
+                const observer = new IntersectionObserver((entries, observer) => {
+                    entries.forEach(entry => {
+                        if (entry.isIntersecting) {
+                            const img = entry.target;
+                            img.src = img.getAttribute('data-src');
+                            img.removeAttribute('data-src');
+                            observer.unobserve(img);
+                        }
+                    });
+                }, {
+                    rootMargin: '0px',
+                    threshold: 0.1
+                });
+
+                imgs.forEach(img => {
+                    observer.observe(img);
+                });
+            }
+
+            window.addEventListener('resize', initiateMasonry);
+            fetchPhotos();
         });
 
-        heightArr[minIndex] += itemHeight;
-      });
-    }
-
-    $(window).on('resize', waterfallHandler);
-
-    function lazyLoadImages() {
-      const lazyImages = document.querySelectorAll('img.lazy');
-      const observer = new IntersectionObserver((entries, observer) => {
-        entries.forEach(entry => {
-          if (entry.isIntersecting) {
-            const img = entry.target;
-            img.src = img.dataset.original;
-            img.onload = () => img.classList.remove('lazy');
-            observer.unobserve(img);
-          }
-        });
-      });
-
-      lazyImages.forEach(img => observer.observe(img));
-    }
-
-    lazyLoadImages();
-
-    var currentImgIndex = 0;
-
-    function showBigImg(index) {
-      currentImgIndex = index;
-      const bigImg = document.getElementById('bigimg');
-      const imgUrl = imgList[index].name;
-      bigImg.querySelector('img').src = "/file/" + imgUrl;
-      bigImg.style.display = 'block';
-    }
-
-    function closeBigImg() {
-      const bigImg = document.getElementById('bigimg');
-      bigImg.style.display = 'none';
-      bigImg.querySelector('img').src = '';
-    }
-
-    function navigateBigImg(direction) {
-      currentImgIndex = (currentImgIndex + direction + imgList.length) % imgList.length;
-      showBigImg(currentImgIndex);
-    }
-
-    $(document).ready(function() {
-      waterfallHandler();
-    });
-  </script>
+        function closeBigImg() {
+            const bigImg = document.getElementById('bigimg');
+            bigImg.style.display = 'none';
+            bigImg.innerHTML = '';
+        }
+    </script>
 </body>
 </html>
