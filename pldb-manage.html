@@ -12,118 +12,45 @@
             padding: 0;
             font-family: Arial, sans-serif;
         }
-        /* 顶部容器样式 */
-        .top-container {
-            display: flex;
-            justify-content: space-between;
-            align-items: flex-start;
-            padding: 10px;
-            background-color: #f8f9fa;
+        /* 返回首页按钮样式 */
+        #returnHome {
             position: fixed;
-            top: 0;
-            width: 100%;
-            z-index: 1000; /* 确保按钮在最上层 */
-        }
-        /* 输入框样式 */
-        #photoUrl {
-            width: 60%;
-            height: 50px;
-            margin-right: 10px;
-        }
-        /* 顶部按钮样式 */
-        .top-buttons {
-            display: flex;
-            gap: 10px;
-        }
-        .top-buttons button {
+            top: 10px;
+            right: 300px;
             padding: 10px 20px;
+            background-color: #28a745;
+            color: white;
             border: none;
             cursor: pointer;
+        }
+        /* 备份按钮样式 */
+        #backupAlbum {
+            position: fixed;
+            top: 10px;
+            right: 150px;
+            padding: 10px 20px;
+            background-color: #007bff;
             color: white;
+            border: none;
+            cursor: pointer;
         }
-        #returnHome { background-color: #28a745; } /* 绿色背景 */
-        #backupAlbum { background-color: #007bff; } /* 蓝色背景 */
-        #batchDelete { background-color: #dc3545; } /* 红色背景 */
-        #submitPhoto { background-color: #17a2b8; } /* 青色背景 */
-        /* 瀑布流容器样式 */
-        #photoWall {
-            display: flex;
-            flex-wrap: wrap;
-            justify-content: center;
-            margin-top: 80px; /* 留出顶部按钮的位置 */
-            padding: 10px;
-            position: relative; /* 确保瀑布流布局 */
-        }
-        /* 图片和删除按钮的容器样式 */
-        .img-container {
-            margin: 5px;
-            width: calc(33.333% - 10px); /* 默认每行3张图片 */
-            background-color: rgba(255, 255, 255, 0); /* 半透明背景 */
-            text-align: center; /* 使文本居中 */
-            position: relative;
-        }
-        .img-container img {
-            width: 100%;
-            height: auto;
-            object-fit: cover; /* 这将确保图片按比例缩放并填充整个容器 */
-        }
-        .img-text {
-            display: block; /* 默认不显示文本 */
-            position: absolute;
-            width: 100%;
-            height: 100%;
-            top: 0;
-            left: 0;
-            padding: 5px; /* 添加内边距 */
-            box-sizing: border-box; /* 确保内边距不会影响总宽度和高度 */
-            background-color: rgba(255, 255, 255, 0.5); /* 半透明背景 */
-            color: black; /* 文本颜色 */
-            z-index: -1; /* 将文本放在底层 */
-            word-wrap: break-word; /* 允许自动换行 */
-            line-height: 2; /* 设置行间距为字体高度的2倍 */
-            overflow: hidden; /* 隐藏溢出的文本 */
-        }
-        .img-container:hover img {
-            box-shadow: inset 0 0 0 5px green; /* 鼠标悬停时添加绿色边框 */
-        }
-        .select-checkbox {
-            position: absolute;
-            top: 5px;
-            left: 5px;
-            z-index: 10; /* 确保复选框在最上层 */
-        }
-        /* 响应式布局 */
-        @media (max-width: 1200px) {
-            .img-container {
-                width: calc(50% - 10px); /* 每行2张图片 */
-            }
-        }
-        @media (max-width: 768px) {
-            .img-container {
-                width: calc(100% - 10px); /* 每行1张图片 */
-            }
-            .top-container {
-                flex-direction: column;
-                align-items: center;
-            }
-            #photoUrl {
-                width: 90%;
-                margin-bottom: 10px;
-            }
-            .top-buttons {
-                width: 100%;
-                justify-content: space-around;
-            }
-            .top-buttons button {
-                width: auto;
-                margin: 5px 0;
-            }
+        /* 显示/隐藏按钮样式 */
+        #toggleView {
+            position: fixed;
+            top: 10px;
+            right: 10px;
+            padding: 10px 20px;
+            background-color: #ffc107;
+            color: white;
+            border: none;
+            cursor: pointer;
         }
         /* 模态窗口（lightbox）样式 */
         .modal {
             display: none;
             position: fixed;
-            z-index: 1000; /* 确保模态窗口在最上层 */
+            z-index: 1000;
+            padding-top: 100px;
             left: 0;
             top: 0;
             width: 100%;
@@ -152,23 +79,79 @@
             text-decoration: none;
             cursor: pointer;
         }
+        /* 图片和删除按钮的容器样式 */
+        .img-container {
+            display: inline-block;
+            position: relative;
+            margin: 5px;
+            width: 150px;
+            height: 100px;
+            background-color: rgba(255, 255, 255, 0.5);
+            background-repeat: no-repeat;
+            background-position: center;
+            background-size: cover;
+            text-align: center;
+            line-height: 100px;
+            cursor: pointer;
+        }
+        .img-container img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        .img-container:hover img {
+            box-shadow: inset 0 0 0 5px green;
+        }
+        .delete-btn {
+            position: absolute;
+            top: 0;
+            left: 0;
+            background-color: red;
+            color: white;
+            border: none;
+            cursor: pointer;
+            z-index: 10;
+        }
+        .modal-open .delete-btn {
+            display: none;
+        }
+        .selected {
+            box-shadow: 0 0 10px 5px #ff0;
+        }
+        /* 瀑布流布局样式 */
+        .photoWall {
+            column-count: 3;
+            column-gap: 10px;
+        }
+        @media (max-width: 768px) {
+            .modal-content {
+                width: 90%;
+            }
+            .img-container {
+                width: calc(50% - 10px);
+                height: 150px;
+            }
+            .photoWall {
+                column-count: 2;
+            }
+        }
+        @media (max-width: 480px) {
+            .photoWall {
+                column-count: 1;
+            }
+        }
     </style>
 </head>
 <body>
-    <!-- 顶部容器 -->
-    <div class="top-container">
-        <textarea id="photoUrl" placeholder="输入图片URL地址，每行一个；无输入请选择图片上传：" rows="2"></textarea>
-        <div class="top-buttons">
-            <button id="returnHome">返回首页</button>
-            <button id="backupAlbum">备份相册</button>
-            <button id="batchDelete">批量删除</button>
-            <button id="submitPhoto">批量添加图片</button>
-        </div>
-    </div>
-    <!-- 图片墙 -->
-    <div id="photoWall"></div>
+    <button id="returnHome">返回首页</button>
+    <button id="backupAlbum">备份相册</button>
+    <button id="toggleView">显示/隐藏</button>
+    <h1 id="albumTitle"></h1>
+    <div id="photoWall" class="photoWall"></div>
+    <textarea id="photoUrl" placeholder="输入图片URL地址，每行一个；无输入请选择图片上传：" cols="60" rows="5"></textarea>
+    <button id="submitPhoto">批量添加图片</button>
+    <button id="deleteSelected">批量删除选中图片</button>
 
-    <!-- 模态窗口 -->
     <div id="myModal" class="modal">
         <span class="close">×</span>
         <img class="modal-content" id="img01">
@@ -181,7 +164,8 @@
         document.getElementById('albumTitle').textContent = `${dirName} 相册`;
 
         let photoUrls = [];
-        let currentIndex = 0;
+        let selectedPhotos = new Set();
+        let currentPhotoIndex = 0;
 
         async function getPhotos() {
             const response = await fetch(`./db/getdbab`, {
@@ -189,69 +173,51 @@
                 body: JSON.stringify({ username, dirName }),
                 headers: { 'Content-Type': 'application/json' }
             });
-            if (response.ok) {
-                photoUrls = await response.json();
-                if (photoUrls.length > 0) {
-                    displayPhotos();
-                } else {
-                    console.error('No photos found.');
-                }
-            } else {
-                console.error('Failed to fetch photos.');
-            }
-        }
-
-        function displayPhotos() {
+            photoUrls = await response.json();
             const photoWall = document.getElementById('photoWall');
             photoWall.innerHTML = '';
             photoUrls.forEach((url, index) => {
                 let imgContainer = document.createElement('div');
                 imgContainer.classList.add('img-container');
 
-                let imgText = document.createElement('div');
-                imgText.classList.add('img-text');
-                imgText.textContent = url;
-                imgContainer.appendChild(imgText);
-
                 let img = document.createElement('img');
                 img.src = url;
-                img.dataset.index = index;
-                img.onload = () => {
-                    imgContainer.appendChild(img);
-                    waterfallHandler(); // 每次图片加载后调用瀑布流函数
-                };
-                img.onerror = () => {
-                    console.error('Failed to load image: ' + url);
-                };
                 img.onclick = function() {
-                    currentIndex = parseInt(this.dataset.index);
-                    showModal(this.src);
+                    document.body.classList.add('modal-open');
+                    document.getElementById('myModal').style.display = "block";
+                    document.getElementById('img01').src = this.src;
+                    currentPhotoIndex = index;
                 }
+                imgContainer.appendChild(img);
 
-                let checkbox = document.createElement('input');
-                checkbox.type = 'checkbox';
-                checkbox.classList.add('select-checkbox');
-                imgContainer.appendChild(checkbox);
+                let deleteButton = document.createElement('button');
+                deleteButton.textContent = '删除';
+                deleteButton.classList.add('delete-btn');
+                deleteButton.onclick = function() {
+                    if (confirm('确定要删除这张图片吗？')) {
+                        deletePhoto(url);
+                    }
+                };
+                imgContainer.appendChild(deleteButton);
+
+                imgContainer.onclick = function() {
+                    if (imgContainer.classList.contains('selected')) {
+                        imgContainer.classList.remove('selected');
+                        selectedPhotos.delete(url);
+                    } else {
+                        imgContainer.classList.add('selected');
+                        selectedPhotos.add(url);
+                    }
+                };
 
                 photoWall.appendChild(imgContainer);
             });
         }
 
-        function showModal(src) {
-            document.body.classList.add('modal-open');
-            document.getElementById('myModal').style.display = "block";
-            document.getElementById('img01').src = src;
-        }
-
-        function closeModal() {
-            document.body.classList.remove('modal-open');
-            document.getElementById('myModal').style.display = "none";
-        }
-
-        async function deletePhotos(photoUrls) {
+        async function deletePhoto(photoUrl) {
             const response = await fetch('./db/deledbpho', {
                 method: 'POST',
-                body: JSON.stringify({ username, dirName, photoUrls }),
+                body: JSON.stringify({ username, dirName, photoUrl }),
                 headers: { 'Content-Type': 'application/json' }
             });
             if (response.ok) {
@@ -259,8 +225,23 @@
                 window.location.reload();
             } else {
                 alert('图片删除失败，请稍后重试');
-                console.error('Failed to delete photos');
+                console.error('Failed to delete photo');
             }
+        }
+
+        async function deleteSelectedPhotos() {
+            const selectedArray = Array.from(selectedPhotos);
+            for (const photoUrl of selectedArray) {
+                await deletePhoto(photoUrl);
+            }
+        }
+
+        var modal = document.getElementById('myModal');
+        var span = document.getElementsByClassName("close")[0];
+
+        span.onclick = function() {
+            document.body.classList.remove('modal-open');
+            modal.style.display = "none";
         }
 
         async function AsubmitPhoto() {
@@ -290,47 +271,48 @@
             document.body.removeChild(a);
         };
 
-        document.getElementById('batchDelete').onclick = function() {
-            const selectedPhotos = Array.from(document.getElementsByClassName('select-checkbox'))
-                .filter(checkbox => checkbox.checked)
-                .map(checkbox => checkbox.nextSibling.src);
-            if (selectedPhotos.length > 0 && confirm('确定要删除选中的图片吗？')) {
-                deletePhotos(selectedPhotos);
+        document.getElementById('toggleView').onclick = function() {
+            const elementsToToggle = [
+                document.getElementById('backupAlbum'),
+                document.getElementById('returnHome'),
+                document.getElementById('toggleView'),
+                document.getElementById('albumTitle'),
+                document.getElementById('photoUrl'),
+                document.getElementById('submitPhoto'),
+                document.getElementById('deleteSelected')
+            ];
+            elementsToToggle.forEach(el => {
+                if (el.style.display === 'none') {
+                    el.style.display = 'block';
+                } else {
+                    el.style.display = 'none';
+                }
+            });
+        };
+
+        document.getElementById('deleteSelected').onclick = function() {
+            if (confirm('确定要删除选中的图片吗？')) {
+                deleteSelectedPhotos();
             }
         };
 
-        document.getElementById('submitPhoto').onclick = function() {
-            AsubmitPhoto();
-        };
-
-        document.getElementsByClassName('close')[0].onclick = function() {
-            closeModal();
-        };
-
-        function waterfallHandler() {
-            const photoWall = document.getElementById('photoWall');
-            const imgContainers = photoWall.getElementsByClassName('img-container');
-            const imgWidth = imgContainers[0] ? imgContainers[0].offsetWidth : 0;
-            const column = imgWidth ? Math.floor(photoWall.offsetWidth / imgWidth) : 0;
-            let heightArr = Array(column).fill(0);
-            Array.from(imgContainers).forEach(item => {
-                const itemHeight = item.offsetHeight;
-                const minHeight = Math.min(...heightArr);
-                const minIndex = heightArr.indexOf(minHeight);
-                item.style.position = 'absolute';
-                item.style.top = minHeight + 'px';
-                item.style.left = minIndex * imgWidth + 'px';
-                heightArr[minIndex] += itemHeight;
-            });
-        }
-
-        window.addEventListener('resize', waterfallHandler);
+        document.addEventListener('keydown', function(event) {
+            if (document.body.classList.contains('modal-open')) {
+                if (event.key === 'ArrowLeft') {
+                    currentPhotoIndex = (currentPhotoIndex > 0) ? currentPhotoIndex - 1 : photoUrls.length - 1;
+                    document.getElementById('img01').src = photoUrls[currentPhotoIndex];
+                }
+                if (event.key === 'ArrowRight') {
+                    currentPhotoIndex = (currentPhotoIndex < photoUrls.length - 1) ? currentPhotoIndex + 1 : 0;
+                    document.getElementById('img01').src = photoUrls[currentPhotoIndex];
+                }
+            }
+        });
 
         getPhotos();
 
-        // 返回首页按钮的点击事件
         document.getElementById('returnHome').onclick = function() {
-            window.location.href = '/'; // 这里的 '/' 表示网站的根目录，根据实际情况修改
+            window.location.href = '/';
         };
     </script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/browser-image-compression/2.0.2/browser-image-compression.min.js"></script>
