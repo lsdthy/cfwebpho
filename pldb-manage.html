@@ -12,8 +12,8 @@
             padding: 0;
             font-family: Arial, sans-serif;
         }
-        /* 返回首页按钮样式 */
-        #returnHome, #backupAlbum, #deleteSelected, #downloadSelected {
+        /* 按钮样式 */
+        .action-btn {
             position: fixed;
             top: 10px;
             padding: 10px 15px;
@@ -22,21 +22,19 @@
             border: none;
             cursor: pointer;
             z-index: 100;
+            margin-left: 10px; /* 按钮之间的间距 */
         }
         #returnHome {
-            right: 320px;
             background-color: #28a745; /* 绿色背景 */
         }
-        #backupAlbum {
-            right: 10px;
-        }
         #deleteSelected {
-            right: 200px;
             background-color: red;
         }
         #downloadSelected {
-            right: 80px;
             background-color: orange;
+        }
+        #backupAlbum {
+            background-color: #007bff;
         }
         /* 模态窗口（lightbox）样式 */
         .modal {
@@ -152,10 +150,10 @@
 </head>
 <body>
     <!-- 添加返回首页按钮 -->
-    <button id="returnHome">返回首页</button>
-    <button id="backupAlbum">备份相册</button>
-    <button class="operation-btn" id="deleteSelected">删除选中</button>
-    <button class="operation-btn" id="downloadSelected">下载选中</button>
+    <button id="returnHome" class="action-btn">返回首页</button>
+    <button id="downloadSelected" class="action-btn">下载选中</button>
+    <button id="deleteSelected" class="action-btn">删除选中</button>
+    <button id="backupAlbum" class="action-btn">备份相册</button>
     <h1 id="albumTitle"></h1>
     <div id="photoWall"></div>
     <textarea id="photoUrl" placeholder="输入图片URL地址，每行一个；无输入请选择图片上传：" cols="60" rows="5"></textarea>
@@ -206,7 +204,7 @@
                 imgContainer.appendChild(imgText);
 
                 let img = document.createElement('img');
-                img.src = url;
+                img.setAttribute('data-src', url); // 使用 data-src 属性用于懒加载
                 img.style.width = '100%';
                 img.style.height = '100%';
                 img.onclick = function() {
@@ -242,6 +240,7 @@
 
                 photoWall.appendChild(imgContainer);
             });
+            lazyLoad(); // 初始化懒加载
         }
 
         async function deletePhoto(photoUrl) {
