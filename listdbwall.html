@@ -49,13 +49,34 @@
             object-fit: contain;
             transform: translate(-50%, -50%);
         }
+        .nav-button {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            background-color: rgba(0, 0, 0, 0.5);
+            color: white;
+            border: none;
+            padding: 10px;
+            cursor: pointer;
+        }
+        .nav-button.left {
+            left: 10px;
+        }
+        .nav-button.right {
+            right: 10px;
+        }
     </style>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/masonry/4.2.2/masonry.pkgd.min.js"></script>
 </head>
 <body>
     <div class="grid"></div>
     <!-- 放大遮罩层 -->
-    <div id="bigimg" onclick="closeBigImg();"></div>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    <div id="bigimg" onclick="closeBigImg();">
+        <button class="nav-button left" onclick="navigateBigImg(-1); event.stopPropagation();">&lt;</button>
+        <img>
+        <button class="nav-button right" onclick="navigateBigImg(1); event.stopPropagation();">&gt;</button>
+    </div>
     <script>
         const params = new URLSearchParams(window.location.search);
         const username = params.get('username');
@@ -81,59 +102,55 @@
             const grid = document.querySelector('.grid');
             let str = '';
             for (let i = 0; i < imgList.length; i++) {
-                str += `<div class="grid-item"><img onclick="showBigImg(${i})" data-original="${imgList[i]}" src="${imgList[i]}"></div>`;
+                str += `<div class="grid-item"><img class="lazy" data-original="${imgList[i]}" src="" data-index="${i}" onclick="showBigImg(${i})"></div>`;
             }
             grid.innerHTML = str;
             adjustGridItems();
+            lazyLoadImages();
         }
 
         function adjustGridItems() {
-            const gridItems = document.querySelectorAll('.grid-item');
-            const screenWidth = window.innerWidth;
-            let columns = 1;
-
-            if (screenWidth >= 1600) {
-                columns = Math.floor(screenWidth / 300); // 大屏幕，列数基于每列300px宽
-            } else if (screenWidth >= 1200) {
-                columns = 4;
-            } else if (screenWidth >= 900) {
-                columns = 3;
-            } else if (screenWidth >= 600) {
-                columns = 2;
-            }
-
-            const columnWidth = `calc(${100 / columns}% - 10px)`;
-            gridItems.forEach(item => {
-                item.style.width = columnWidth;
+            const grid = document.querySelector('.grid');
+            new Masonry(grid, {
+                itemSelector: '.grid-item',
+                columnWidth: '.grid-item',
+                percentPosition: true
             });
+        }
+
+        function lazyLoadImages() {
+            const lazyImages = document.querySelectorAll('img.lazy');
+            const observer = new IntersectionObserver((entries, observer) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        const img = entry.target;
+                        img.src = img.dataset.original;
+                        img.onload = () => img.classList.remove('lazy');
+                        observer.unobserve(img);
+                    }
+                });
+            });
+            lazyImages.forEach(img => observer.observe(img));
         }
 
         function showBigImg(index) {
             currentImgIndex = index;
             const bigImg = document.getElementById('bigimg');
             const imgUrl = imgList[index];
-            bigImg.innerHTML = `<img src="${imgUrl}">`;
+            bigImg.querySelector('img').src = imgUrl;
             bigImg.style.display = 'block';
         }
 
         function closeBigImg() {
             const bigImg = document.getElementById('bigimg');
             bigImg.style.display = 'none';
-            bigImg.innerHTML = '';
+            bigImg.querySelector('img').src = '';
         }
 
-        document.addEventListener('keydown', function(event) {
-            if (document.getElementById('bigimg').style.display === 'block') {
-                if (event.key === 'ArrowLeft') {
-                    currentImgIndex = (currentImgIndex > 0) ? currentImgIndex - 1 : imgList.length - 1;
-                    showBigImg(currentImgIndex);
-                }
-                if (event.key === 'ArrowRight') {
-                    currentImgIndex = (currentImgIndex < imgList.length - 1) ? currentImgIndex + 1 : 0;
-                    showBigImg(currentImgIndex);
-                }
-            }
-        });
+        function navigateBigImg(direction) {
+            currentImgIndex = (currentImgIndex + direction + imgList.length) % imgList.length;
+            showBigImg(currentImgIndex);
+        }
 
         window.addEventListener('resize', adjustGridItems);
 
