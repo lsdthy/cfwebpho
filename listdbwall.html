@@ -9,10 +9,12 @@
             background: linear-gradient(90deg, #ffd7e4 0%, #c8f1ff 100%);
             margin: 0;
             padding: 0;
+            font-family: Arial, sans-serif;
         }
         .grid {
             max-width: 1200px;
             margin: auto;
+            padding: 20px;
         }
         .grid-item {
             width: 200px;
@@ -58,32 +60,32 @@
         const params = new URLSearchParams(window.location.search);
         const username = params.get('username');
         const dirName = params.get('directory');
-        var imgList;
+        var imgList = [];
 
-        $.ajax({
-            url: "./db/getdbab",
-            method: "POST",
-            contentType: "application/json",
-            data: JSON.stringify({ username: username, dirName: dirName }),
-            success: function(data) {
-                imgList = data; // 将请求的数据赋值给局部变量
+        async function fetchPhotos() {
+            const response = await fetch(`./db/getdbab`, {
+                method: 'POST',
+                body: JSON.stringify({ username, dirName }),
+                headers: { 'Content-Type': 'application/json' }
+            });
+            if (response.ok) {
+                imgList = await response.json();
                 renderImages();
-            },
-            error: function() {
-                console.error("无法加载图片列表");
+            } else {
+                console.error('Failed to fetch photos');
             }
-        });
+        }
 
         function renderImages() {
-            var grid = document.querySelector('.grid');
+            const grid = document.querySelector('.grid');
             let str = '';
             for (let i = 0; i < imgList.length; i++) {
-                str += '<div class="grid-item"><img onclick="showBigImg(this)" data-original="' + imgList[i] + '" src="' + imgList[i] + '"></div>';
+                str += `<div class="grid-item"><img onclick="showBigImg(this)" data-original="${imgList[i]}" src="${imgList[i]}"></div>`;
             }
             grid.innerHTML = str;
 
             // 初始化 Masonry 瀑布流布局
-            var msnry = new Masonry(grid, {
+            const msnry = new Masonry(grid, {
                 itemSelector: '.grid-item',
                 columnWidth: '.grid-item',
                 percentPosition: true
@@ -96,17 +98,19 @@
         }
 
         function showBigImg(img) {
-            var bigImg = document.getElementById('bigimg');
-            var imgUrl = img.getAttribute('data-original');
-            bigImg.innerHTML = '<img src="' + imgUrl + '">';
+            const bigImg = document.getElementById('bigimg');
+            const imgUrl = img.getAttribute('data-original');
+            bigImg.innerHTML = `<img src="${imgUrl}">`;
             bigImg.style.display = 'block';
         }
 
         function closeBigImg() {
-            var bigImg = document.getElementById('bigimg');
+            const bigImg = document.getElementById('bigimg');
             bigImg.style.display = 'none';
             bigImg.innerHTML = '';
         }
+
+        fetchPhotos();
     </script>
 </body>
 </html>
