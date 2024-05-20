@@ -48,6 +48,21 @@
             object-fit: contain;
             transform: translate(-50%, -50%);
         }
+        @media (max-width: 600px) {
+            .grid-item {
+                width: calc(100% - 20px);
+            }
+        }
+        @media (min-width: 601px) and (max-width: 900px) {
+            .grid-item {
+                width: calc(50% - 20px); /* 2 columns for tablets */
+            }
+        }
+        @media (min-width: 901px) {
+            .grid-item {
+                width: calc(25% - 20px); /* 4 columns for desktop */
+            }
+        }
     </style>
 </head>
 <body>
@@ -77,15 +92,25 @@
             const grid = document.querySelector('.grid');
             let str = '';
             for (let i = 0; i < imgList.length; i++) {
-                str += `<div class="grid-item"><img onload="waterfallHandler()" data-original="${imgList[i]}" src="${imgList[i]}"></div>`;
+                str += `<div class="grid-item" style="width:${getImageWidth()}"><img onload="waterfallHandler()" data-original="${imgList[i]}" src="${imgList[i]}"></div>`;
             }
             grid.innerHTML = str;
         }
 
+        function getImageWidth() {
+            // Adjust width based on screen size
+            if (window.innerWidth < 600) {
+                return '100%'; // 1 column
+            } else if (window.innerWidth < 900) {
+                return '50%'; // 2 columns
+            } else {
+                return '25%'; // 4 columns
+            }
+        }
+
         function waterfallHandler() {
-            const gridWidth = document.querySelector('.grid').offsetWidth;
-            const imgWidth = $('.grid-item img').first().outerWidth();
-            const columns = Math.floor(gridWidth / imgWidth);
+            const imgWidth = $('.grid-item').first().outerWidth();
+            const columns = Math.floor($(window).width() / imgWidth);
             let heightArr = new Array(columns).fill(0);
 
             $('.grid-item').each(function() {
