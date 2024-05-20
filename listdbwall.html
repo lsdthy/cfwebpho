@@ -20,12 +20,12 @@
             gap: 10px;
         }
         .grid-item {
-            flex: 1 1 calc(33.333% - 10px);
             background: #fff;
             border-radius: 10px;
             box-shadow: 0 2px 5px rgba(0, 0, 0, 0.15);
             overflow: hidden;
             position: relative;
+            width: calc(100% - 10px); /* 默认全宽 */
         }
         .grid-item img {
             width: 100%;
@@ -49,6 +49,21 @@
             left: 50%;
             object-fit: contain;
             transform: translate(-50%, -50%);
+        }
+        @media (min-width: 600px) {
+            .grid-item {
+                width: calc(50% - 10px); /* 平板上2列 */
+            }
+        }
+        @media (min-width: 900px) {
+            .grid-item {
+                width: calc(33.333% - 10px); /* 电脑上3列 */
+            }
+        }
+        @media (min-width: 1200px) {
+            .grid-item {
+                width: calc(25% - 10px); /* 大屏幕上4列 */
+            }
         }
     </style>
 </head>
