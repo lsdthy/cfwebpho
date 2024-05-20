@@ -55,6 +55,9 @@
         .delete-btn:hover {
             background-color: darkred;
         }
+        .view-option {
+            margin-right: 10px;
+        }
         #newDirectory {
             margin: 10px;
             padding: 10px;
@@ -89,11 +92,6 @@
     <textarea id="newDirectory" placeholder="输入目录名" cols="20" rows="2"></textarea>
     <button onclick="createDirectory()">创建目录</button>
 
-    <div>
-        <button id="goToListdbWall">进入照片墙</button>
-        <button id="goToPldbManage">进入相册管理</button>
-    </div>
-
     <script>
         const username = new URLSearchParams(window.location.search).get('username');
         const password = new URLSearchParams(window.location.search).get('password');
@@ -121,6 +119,18 @@
                 name.textContent = dir;
                 div.appendChild(name);
 
+                let viewOption = document.createElement('select');
+                viewOption.classList.add('view-option');
+                let option1 = document.createElement('option');
+                option1.value = 'wall';
+                option1.textContent = '照片墙';
+                let option2 = document.createElement('option');
+                option2.value = 'manage';
+                option2.textContent = '相册管理';
+                viewOption.appendChild(option1);
+                viewOption.appendChild(option2);
+                div.appendChild(viewOption);
+
                 let deleteButton = document.createElement('button');
                 deleteButton.classList.add('delete-btn');
                 deleteButton.textContent = '删除';
@@ -131,7 +141,7 @@
                 div.appendChild(deleteButton);
 
                 div.addEventListener('click', function() {
-                    const selectedOption = document.querySelector('input[name="viewOption"]:checked').value;
+                    const selectedOption = viewOption.value;
                     if (selectedOption === 'wall') {
                         window.location.href = `./listdbwall.html?username=${username}&directory=${dir}`;
                     } else {
@@ -174,14 +184,6 @@
                 console.error('Failed to delete directory');
             }
         }
-
-        document.getElementById('goToListdbWall').onclick = function() {
-            window.location.href = `/listdbwall.html?username=${username}&password=${password}`;
-        };
-
-        document.getElementById('goToPldbManage').onclick = function() {
-            window.location.href = `/pldb-manage.html?username=${username}&password=${password}`;
-        };
     </script>
 </body>
 </html>
