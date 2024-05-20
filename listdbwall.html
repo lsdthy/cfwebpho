@@ -41,8 +41,8 @@
         }
         #bigimg img {
             position: absolute;
-            width: 90%;
-            height: 90%;
+            max-width: 90%;
+            max-height: 90%;
             top: 50%;
             left: 50%;
             object-fit: contain;
@@ -78,7 +78,7 @@
             const grid = document.querySelector('.grid');
             let str = '';
             for (let i = 0; i < imgList.length; i++) {
-                str += `<div class="grid-item"><img onload="waterfallHandler()" data-original="${imgList[i]}" src="${imgList[i]}"></div>`;
+                str += `<div class="grid-item"><img onload="waterfallHandler()" onclick="showBigImg(this)" data-original="${imgList[i]}" src="${imgList[i]}"></div>`;
             }
             grid.innerHTML = str;
         }
@@ -86,7 +86,7 @@
         function waterfallHandler() {
             let column = Math.max(1, parseInt($(window).width() / 300)); // At least one column
             let heightArr = Array(column).fill(0);
-            $('img').each(function (index, item) {
+            $('.grid-item img').each(function (index, item) {
                 let itemHeight = $(item).outerHeight();
                 let minHeight = Math.min(...heightArr);
                 let minIndex = heightArr.indexOf(minHeight);
@@ -95,8 +95,15 @@
                     top: minHeight + 'px',
                     left: minIndex * 300 + 'px'
                 });
-                heightArr[minIndex] += itemHeight;
+                heightArr[minIndex] += itemHeight + 10; // Update the height array
             });
+        }
+
+        function showBigImg(img) {
+            var bigImg = document.getElementById('bigimg');
+            var imgUrl = img.getAttribute('data-original');
+            bigImg.innerHTML = '<img src="' + imgUrl + '">';
+            bigImg.style.display = 'block';
         }
 
         function closeBigImg() {
