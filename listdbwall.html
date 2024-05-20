@@ -72,7 +72,9 @@
 </head>
 <body>
     <div class="grid"></div>
-    <div id="bigimg" onclick="closeBigImg();"></div>
+    <div id="bigimg" onclick="closeBigImg();">
+        <img src="" alt="Big Image">
+    </div>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
     <script>
         const params = new URLSearchParams(window.location.search);
@@ -88,7 +90,7 @@
             if (response.ok) {
                 const imgList = await response.json();
                 renderImages(imgList);
-                preloadImages(imgList.slice(0, 50)); // Preload the first 50 images
+                preloadImages(imgList.slice(0, 5)); // Preload the first 5 images
             } else {
                 console.error('Failed to fetch photos');
             }
