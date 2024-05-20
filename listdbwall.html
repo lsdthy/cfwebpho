@@ -7,31 +7,23 @@
     <style>
         body {
             background: linear-gradient(90deg, #ffd7e4 0%, #c8f1ff 100%);
+            margin: 0;
+            padding: 0;
         }
-        ::-webkit-scrollbar {
-            width: 8px;
-            height: 8px;
+        .grid {
+            max-width: 1200px;
+            margin: auto;
         }
-        ::-webkit-scrollbar-corner {
-            background-color: transparent;
-        }
-        ::-webkit-scrollbar-thumb {
-            background-color: #49b1f5;
-            background-image: -webkit-linear-gradient(45deg, hsla(0, 0%, 100%, .4) 25%, transparent 0, transparent 50%, hsla(0, 0%, 100%, .4) 0, hsla(0, 0%, 100%, .4) 75%, transparent 0, transparent);
-            border-radius: 2em;
-        }
-        ::-webkit-scrollbar-track {
-            background-color: rgba(73, 177, 245, .2);
-            border-radius: 2em;
-        }
-        .box {
-            position: relative;
-        }
-        img {
+        .grid-item {
             width: 200px;
-            height: auto;
+            margin-bottom: 10px;
             padding: 5px;
-            margin-left: 1.25%;
+            border-radius: 20px;
+            background: #fff;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.15);
+        }
+        .grid-item img {
+            max-width: 100%;
             border-radius: 20px;
         }
         #bigimg {
@@ -46,19 +38,21 @@
         #bigimg img {
             position: absolute;
             width: 90%;
-            height: 100%;
+            height: 90%;
             top: 50%;
             left: 50%;
             object-fit: contain;
             transform: translate(-50%, -50%);
         }
     </style>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/masonry/4.2.2/masonry.pkgd.min.css" />
 </head>
 <body>
-    <div class="box"></div>
+    <div class="grid"></div>
     <!-- 放大遮罩层 -->
     <div id="bigimg" onclick="closeBigImg();"></div>
-    <script src="https://apps.bdimg.com/libs/jquery/2.1.4/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/masonry/4.2.2/masonry.pkgd.min.js"></script>
     <script>
         const params = new URLSearchParams(window.location.search);
         const username = params.get('username');
@@ -80,13 +74,24 @@
         });
 
         function renderImages() {
-            var targetElement = document.querySelector('.box');
+            var grid = document.querySelector('.grid');
             let str = '';
             for (let i = 0; i < imgList.length; i++) {
-                str += '<img onclick="showBigImg(this)" data-original="' + imgList[i] + '" src="' + imgList[i] + '">';
+                str += '<div class="grid-item"><img onclick="showBigImg(this)" data-original="' + imgList[i] + '" src="' + imgList[i] + '"></div>';
             }
-            targetElement.innerHTML = str;
-            waterfallHandler(); // 调用瀑布流处理函数
+            grid.innerHTML = str;
+
+            // 初始化 Masonry 瀑布流布局
+            var msnry = new Masonry( grid, {
+                itemSelector: '.grid-item',
+                columnWidth: '.grid-item',
+                percentPosition: true
+            });
+
+            // 重新布局所有图片
+            imagesLoaded( grid ).on( 'progress', function() {
+                msnry.layout();
+            });
         }
 
         function showBigImg(img) {
@@ -101,42 +106,7 @@
             bigImg.style.display = 'none';
             bigImg.innerHTML = '';
         }
-
-        window.onload = $(function () {
-            // 获取图片的宽度(200px)
-            let imgWidth = $('img').outerWidth(); // 200
-            waterfallHandler();
-
-            // 瀑布流处理
-            function waterfallHandler() {
-                // 获取图片的列数
-                let column = parseInt($(window).width() / imgWidth);
-                // 高度数组
-                let heightArr = [];
-                for (let i = 0; i < column; i++) {
-                    heightArr[i] = 0;
-                }
-                $.each($('img'), function (index, item) {
-                    // 当前元素的高度
-                    let itemHeight = $(item).outerHeight();
-                    // 高度数组最小的高度
-                    let minHeight = Math.min(...heightArr);
-                    // 高度数组最小的高度的索引
-                    let minIndex = heightArr.indexOf(minHeight);
-                    $(item).css({
-                        position: 'absolute',
-                        top: minHeight + 'px',
-                        left: minIndex * imgWidth + 'px'
-                    });
-                    heightArr[minIndex] += itemHeight;
-                });
-            }
-
-            // 窗口大小改变
-            $(window).resize(function () {
-                waterfallHandler();
-            });
-        });
     </script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/imagesloaded/4.1.4/imagesloaded.pkgd.min.js"></script>
 </body>
 </html>
