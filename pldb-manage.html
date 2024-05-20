@@ -53,6 +53,7 @@
             justify-content: center;
             margin-top: 80px; /* 留出顶部按钮的位置 */
             padding: 10px;
+            position: relative; /* 确保瀑布流布局 */
         }
         /* 图片和删除按钮的容器样式 */
         .img-container {
@@ -209,8 +210,16 @@
                 body: JSON.stringify({ username, dirName }),
                 headers: { 'Content-Type': 'application/json' }
             });
-            photoUrls = await response.json();
-            displayPhotos();
+            if (response.ok) {
+                photoUrls = await response.json();
+                if (photoUrls.length > 0) {
+                    displayPhotos();
+                } else {
+                    console.error('No photos found.');
+                }
+            } else {
+                console.error('Failed to fetch photos.');
+            }
         }
 
         function displayPhotos() {
@@ -228,11 +237,17 @@
                 let img = document.createElement('img');
                 img.src = url;
                 img.dataset.index = index;
+                img.onload = () => {
+                    imgContainer.appendChild(img);
+                    waterfallHandler(); // 每次图片加载后调用瀑布流函数
+                };
+                img.onerror = () => {
+                    console.error('Failed to load image: ' + url);
+                };
                 img.onclick = function() {
                     currentIndex = parseInt(this.dataset.index);
                     showModal(this.src);
                 }
-                imgContainer.appendChild(img);
 
                 let checkbox = document.createElement('input');
                 checkbox.type = 'checkbox';
@@ -241,8 +256,6 @@
 
                 photoWall.appendChild(imgContainer);
             });
-
-            waterfallHandler();
         }
 
         function showModal(src) {
@@ -335,8 +348,8 @@
         function waterfallHandler() {
             const photoWall = document.getElementById('photoWall');
             const imgContainers = photoWall.getElementsByClassName('img-container');
-            const imgWidth = imgContainers[0].offsetWidth;
-            const column = parseInt(photoWall.offsetWidth / imgWidth);
+            const imgWidth = imgContainers[0] ? imgContainers[0].offsetWidth : 0;
+            const column = imgWidth ? Math.floor(photoWall.offsetWidth / imgWidth) : 0;
             let heightArr = Array(column).fill(0);
             Array.from(imgContainers).forEach(item => {
                 const itemHeight = item.offsetHeight;
