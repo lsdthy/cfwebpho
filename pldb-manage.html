@@ -36,6 +36,13 @@
         #backupAlbum {
             background-color: #007bff;
         }
+        .action-btn-container {
+            position: fixed;
+            top: 10px;
+            right: 10px;
+            display: flex;
+            gap: 10px; /* 按钮之间的间距 */
+        }
         /* 模态窗口（lightbox）样式 */
         .modal {
             display: none;
@@ -149,11 +156,12 @@
     </style>
 </head>
 <body>
-    <!-- 添加返回首页按钮 -->
-    <button id="returnHome" class="action-btn">返回首页</button>
-    <button id="downloadSelected" class="action-btn">下载选中</button>
-    <button id="deleteSelected" class="action-btn">删除选中</button>
-    <button id="backupAlbum" class="action-btn">备份相册</button>
+    <div class="action-btn-container">
+        <button id="returnHome" class="action-btn">返回首页</button>
+        <button id="downloadSelected" class="action-btn">下载选中</button>
+        <button id="deleteSelected" class="action-btn">删除选中</button>
+        <button id="backupAlbum" class="action-btn">备份相册</button>
+    </div>
     <h1 id="albumTitle"></h1>
     <div id="photoWall"></div>
     <textarea id="photoUrl" placeholder="输入图片URL地址，每行一个；无输入请选择图片上传：" cols="60" rows="5"></textarea>
