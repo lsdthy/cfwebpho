@@ -13,37 +13,29 @@
             font-family: Arial, sans-serif;
         }
         /* 返回首页按钮样式 */
-        #returnHome {
+        #returnHome, #backupAlbum, #deleteSelected, #downloadSelected {
             position: fixed;
             top: 10px;
-            left: 10px;
-            padding: 10px 20px;
-            background-color: #28a745; /* 绿色背景 */
-            color: white;
-            border: none;
-            cursor: pointer;
-            z-index: 100;
-        }
-        /* 操作按钮样式 */
-        #backupAlbum, #deleteSelected, #downloadSelected {
-            position: fixed;
-            top: 10px;
-            padding: 10px 20px;
+            padding: 10px 15px;
             background-color: #007bff;
             color: white;
             border: none;
             cursor: pointer;
             z-index: 100;
         }
+        #returnHome {
+            right: 320px;
+            background-color: #28a745; /* 绿色背景 */
+        }
         #backupAlbum {
             right: 10px;
         }
         #deleteSelected {
-            right: 130px;
+            right: 200px;
             background-color: red;
         }
         #downloadSelected {
-            right: 250px;
+            right: 80px;
             background-color: orange;
         }
         /* 模态窗口（lightbox）样式 */
@@ -119,33 +111,26 @@
         .img-container:hover img {
             box-shadow: inset 0 0 0 5px green; /* 鼠标悬停时添加绿色边框 */
         }
-        .delete-btn {
+        .delete-btn, .select-btn {
             position: absolute;
             top: 5px;
+            width: 25px;
+            height: 25px;
+            font-size: 14px;
+            border: none;
+            border-radius: 50%;
+            cursor: pointer;
+            z-index: 10; /* 确保按钮在最上层 */
+        }
+        .delete-btn {
             left: 5px;
             background-color: red;
             color: white;
-            font-size: 16px;
-            border: none;
-            border-radius: 50%;
-            width: 30px;
-            height: 30px;
-            cursor: pointer;
-            z-index: 10; /* 确保删除按钮在最上层 */
         }
         .select-btn {
-            position: absolute;
-            top: 5px;
             right: 5px;
             background-color: blue;
             color: white;
-            font-size: 16px;
-            border: none;
-            border-radius: 50%;
-            width: 30px;
-            height: 30px;
-            cursor: pointer;
-            z-index: 10; /* 确保选中按钮在最上层 */
         }
         .selected {
             background-color: green; /* 选中后的颜色 */
@@ -275,12 +260,14 @@
         }
 
         async function bulkDeletePhotos() {
-            for (let photoUrl of selectedPhotos) {
-                await deletePhoto(photoUrl);
+            if (confirm('确定要删除选中的图片吗？')) {
+                for (let photoUrl of selectedPhotos) {
+                    await deletePhoto(photoUrl);
+                }
+                alert('选中图片已删除');
+                selectedPhotos = [];
+                window.location.reload();
             }
-            alert('选中图片已删除');
-            selectedPhotos = [];
-            window.location.reload();
         }
 
         function downloadPhoto(photoUrl) {
@@ -318,6 +305,35 @@
         document.getElementById('returnHome').onclick = function() {
             window.location.href = '/'; // 这里的 '/' 表示网站的根目录，根据实际情况修改
         };
+
+        function lazyLoad() {
+            const imgs = document.querySelectorAll('.img-container img');
+            const config = {
+                rootMargin: '0px 0px 50px 0px',
+                threshold: 0.01
+            };
+
+            const observer = new IntersectionObserver((entries, self) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        preloadImage(entry.target);
+                        self.unobserve(entry.target);
+                    }
+                });
+            }, config);
+
+            imgs.forEach(img => {
+                observer.observe(img);
+            });
+        }
+
+        function preloadImage(img) {
+            const src = img.getAttribute('data-src');
+            if (!src) { return; }
+            img.src = src;
+        }
+
+        document.addEventListener('DOMContentLoaded', lazyLoad);
     </script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/browser-image-compression/2.0.2/browser-image-compression.min.js"></script>
 </body>
