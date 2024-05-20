@@ -53,6 +53,7 @@
     <div id="bigimg" onclick="closeBigImg();"></div>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/masonry/4.2.2/masonry.pkgd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/imagesloaded/4.1.4/imagesloaded.pkgd.min.js"></script>
     <script>
         const params = new URLSearchParams(window.location.search);
         const username = params.get('username');
@@ -63,7 +64,7 @@
             url: "./db/getdbab",
             method: "POST",
             contentType: "application/json",
-            data: JSON.stringify({ username, dirName }),
+            data: JSON.stringify({ username: username, dirName: dirName }),
             success: function(data) {
                 imgList = data; // 将请求的数据赋值给局部变量
                 renderImages();
@@ -82,14 +83,14 @@
             grid.innerHTML = str;
 
             // 初始化 Masonry 瀑布流布局
-            var msnry = new Masonry( grid, {
+            var msnry = new Masonry(grid, {
                 itemSelector: '.grid-item',
                 columnWidth: '.grid-item',
                 percentPosition: true
             });
 
             // 重新布局所有图片
-            imagesLoaded( grid ).on( 'progress', function() {
+            imagesLoaded(grid).on('progress', function() {
                 msnry.layout();
             });
         }
@@ -107,6 +108,5 @@
             bigImg.innerHTML = '';
         }
     </script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/imagesloaded/4.1.4/imagesloaded.pkgd.min.js"></script>
 </body>
 </html>
