@@ -89,8 +89,14 @@
     <textarea id="newDirectory" placeholder="输入目录名" cols="20" rows=2"></textarea>
     <button onclick="createDirectory()">创建目录</button>
 
+    <div>
+        <button id="goToListdbWall">进入照片墙</button>
+        <button id="goToPldbManage">进入相册管理</button>
+    </div>
+
     <script>
         const username = new URLSearchParams(window.location.search).get('username');
+        const password = new URLSearchParams(window.location.search).get('password');
         document.getElementById('welcomeMessage').textContent = `欢迎来到${username}的相册`;
 
         window.onload = function() {
@@ -99,7 +105,7 @@
 
         async function getDirectories() {
             const response = await fetch(`./db/getdir?username=${username}`);
-                      const directories = await response.json();
+            const directories = await response.json();
             const directoryList = document.getElementById('directoryList');
             directoryList.innerHTML = '';
             directories.forEach(dir => {
@@ -131,8 +137,7 @@
                 directoryList.appendChild(div);
             });
         }
-        
-//创建目录
+
         async function createDirectory() {
             const dirName = document.getElementById('newDirectory').value;
             const response = await fetch('./db/plpst_mulu', {
@@ -164,6 +169,14 @@
                 console.error('Failed to delete directory');
             }
         }
+
+        document.getElementById('goToListdbWall').onclick = function() {
+            window.location.href = `/listdbwall.html?username=${username}&password=${password}`;
+        };
+
+        document.getElementById('goToPldbManage').onclick = function() {
+            window.location.href = `/pldb-manage.html?username=${username}&password=${password}`;
+        };
     </script>
 </body>
 </html>
