@@ -13,7 +13,7 @@
         }
         .grid {
             position: relative;
-            max-width: 100%;
+            width: 100%;
             margin: auto;
             padding: 20px;
         }
@@ -37,11 +37,12 @@
             width: 100%;
             height: 100%;
             background-color: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
         }
         #bigimg img {
             position: absolute;
-            width: 90%;
-            height: 90%;
+            max-width: 90%;
+            max-height: 90%;
             top: 50%;
             left: 50%;
             object-fit: contain;
@@ -51,15 +52,12 @@
 </head>
 <body>
     <div class="grid"></div>
-    <!-- 放大遮罩层 -->
     <div id="bigimg" onclick="closeBigImg();"></div>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
     <script>
         const params = new URLSearchParams(window.location.search);
         const username = params.get('username');
         const dirName = params.get('directory');
-        var imgList = [];
-        var currentImgIndex = 0;
 
         async function fetchPhotos() {
             const response = await fetch(`./db/getdbab`, {
@@ -68,28 +66,46 @@
                 headers: { 'Content-Type': 'application/json' }
             });
             if (response.ok) {
-                imgList = await response.json();
-                renderImages();
+                const imgList = await response.json();
+                renderImages(imgList);
             } else {
                 console.error('Failed to fetch photos');
             }
         }
 
-        function renderImages() {
+        function renderImages(imgList) {
             const grid = document.querySelector('.grid');
             let str = '';
             for (let i = 0; i < imgList.length; i++) {
-                str += `<div class="grid-item"><img onclick="showBigImg(${i})" data-original="${imgList[i]}" src="${imgList[i]}"></div>`;
+                str += `<div class="grid-item"><img onload="waterfallHandler()" data-original="${imgList[i]}" src="${imgList[i]}"></div>`;
             }
             grid.innerHTML = str;
-            waterfallHandler();
         }
 
-        function showBigImg(index) {
-            currentImgIndex = index;
+        function waterfallHandler() {
+            const gridWidth = document.querySelector('.grid').offsetWidth;
+            const imgWidth = $('.grid-item img').first().outerWidth();
+            const columns = Math.floor(gridWidth / imgWidth);
+            let heightArr = new Array(columns).fill(0);
+
+            $('.grid-item').each(function() {
+                const minIndex = heightArr.indexOf(Math.min(...heightArr));
+                const x = minIndex * imgWidth;
+                const y = heightArr[minIndex];
+
+                $(this).css({
+                    left: `${x}px`,
+                    top: `${y}px`
+                });
+
+                heightArr[minIndex] += $(this).outerHeight() + 10;
+            });
+        }
+
+        function showBigImg(img) {
             const bigImg = document.getElementById('bigimg');
-            const imgUrl = imgList[index];
-            bigImg.innerHTML = `<img src="${imgUrl}">`;
+            const imgUrl = img.getAttribute('data-original');
+            bigImg.innerHTML = '<img src="' + imgUrl + '">';
             bigImg.style.display = 'block';
         }
 
@@ -99,53 +115,8 @@
             bigImg.innerHTML = '';
         }
 
-        document.addEventListener('keydown', function(event) {
-            if (document.getElementById('bigimg').style.display === 'block') {
-                if (event.key === 'ArrowLeft') {
-                    currentImgIndex = (currentImgIndex > 0) ? currentImgIndex - 1 : imgList.length - 1;
-                    showBigImg(currentImgIndex);
-                }
-                if (event.key === 'ArrowRight') {
-                    currentImgIndex = (currentImgIndex < imgList.length - 1) ? currentImgIndex + 1 : 0;
-                    showBigImg(currentImgIndex);
-                }
-            }
-        });
-
-        window.onload = $(function () {
+        $(window).resize(function () {
             waterfallHandler();
-
-            // 瀑布流处理
-            function waterfallHandler() {
-                // 获取图片的宽度
-                let imgWidth = $('.grid-item').outerWidth();
-                // 获取图片的列数
-                let column = parseInt($(window).width() / imgWidth);
-                // 高度数组
-                let heightArr = [];
-                for (let i = 0; i < column; i++) {
-                    heightArr[i] = 0;
-                }
-                $('.grid-item').each(function (index, item) {
-                    // 当前元素的高度
-                    let itemHeight = $(item).outerHeight();
-                    // 高度数组最小的高度
-                    let minHeight = Math.min(...heightArr);
-                    // 高度数组最小的高度的索引
-                    let minIndex = heightArr.indexOf(minHeight);
-                    $(item).css({
-                        top: minHeight + 'px',
-                        left: minIndex * imgWidth + 'px'
-                    });
-
-                    heightArr[minIndex] += itemHeight;
-                });
-            }
-
-            // 窗口大小改变
-            $(window).resize(function () {
-                waterfallHandler();
-            });
         });
 
         fetchPhotos();
