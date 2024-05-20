@@ -55,61 +55,68 @@
     <div id="bigimg" onclick="closeBigImg();"></div>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
     <script>
-        $(window).on("load", function() {
-            fetchPhotos();
+        const params = new URLSearchParams(window.location.search);
+        const username = params.get('username');
+        const dirName = params.get('directory');
 
-            async function fetchPhotos() {
-                // 示例图片列表，请替换为您的服务器API调用
-                const imgList = ['./img1.jpg', './img2.jpg', './img3.jpg'];
-                renderImages(imgList);
-            }
-
-            function renderImages(imgList) {
-                const grid = $('.grid');
-                let str = '';
-                for (let i = 0; i < imgList.length; i++) {
-                    str += `<div class="grid-item"><img onload="waterfallHandler()" onclick="showBigImg(this)" data-original="${imgList[i]}" src="${imgList[i]}"></div>`;
-                }
-                grid.html(str);
-            }
-
-            function waterfallHandler() {
-                let imgWidth = $('img').outerWidth(); // 获取图片的宽度
-                let column = parseInt($(window).width() / imgWidth); // 获取图片的列数
-                let heightArr = [];
-                for (let i = 0; i < column; i++) {
-                    heightArr[i] = 0;
-                }
-                $('img').each(function () {
-                    let itemHeight = $(this).outerHeight();
-                    let minHeight = Math.min(...heightArr);
-                    let minIndex = heightArr.indexOf(minHeight);
-                    $(this).parent().css({
-                        position: 'absolute',
-                        top: minHeight + 'px',
-                        left: minIndex * imgWidth + 'px'
-                    });
-                    heightArr[minIndex] += itemHeight;
-                });
-            }
-
-            $(window).resize(function () {
-                waterfallHandler();
+        async function fetchPhotos() {
+            const response = await fetch(`./db/getdbab`, {
+                method: 'POST',
+                body: JSON.stringify({ username, dirName }),
+                headers: { 'Content-Type': 'application/json' }
             });
-        });
+            if (response.ok) {
+                const imgList = await response.json();
+                renderImages(imgList);
+            } else {
+                console.error('Failed to fetch photos');
+            }
+        }
+
+        function renderImages(imgList) {
+            const grid = document.querySelector('.grid');
+            let str = '';
+            for (let i = 0; i < imgList.length; i++) {
+                str += `<div class="grid-item"><img onload="waterfallHandler()" onclick="showBigImg(this)" data-original="${imgList[i]}" src="${imgList[i]}"></div>`;
+            }
+            grid.innerHTML = str;
+        }
+
+        function waterfallHandler() {
+            let imgWidth = $('.grid-item img').first().outerWidth();
+            let column = Math.max(1, parseInt($(window).width() / imgWidth));
+            let heightArr = Array(column).fill(0);
+            $('.grid-item img').each(function () {
+                let itemHeight = $(this).outerHeight();
+                let minHeight = Math.min(...heightArr);
+                let minIndex = heightArr.indexOf(minHeight);
+                $(this).parent().css({
+                    position: 'absolute',
+                    top: minHeight + 'px',
+                    left: minIndex * imgWidth + 'px'
+                });
+                heightArr[minIndex] += itemHeight;
+            });
+        }
 
         function showBigImg(img) {
-            var bigImg = document.getElementById('bigimg');
-            var imgUrl = img.getAttribute('data-original');
+            const bigImg = document.getElementById('bigimg');
+            const imgUrl = img.getAttribute('data-original');
             bigImg.innerHTML = '<img src="' + imgUrl + '">';
             bigImg.style.display = 'block';
         }
 
         function closeBigImg() {
-            var bigImg = document.getElementById('bigimg');
+            const bigImg = document.getElementById('bigimg');
             bigImg.style.display = 'none';
             bigImg.innerHTML = '';
         }
+
+        $(window).resize(function () {
+            waterfallHandler();
+        });
+
+        fetchPhotos();
     </script>
 </body>
 </html>
