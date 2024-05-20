@@ -11,12 +11,13 @@
             margin: 0;
             padding: 0;
             font-family: Arial, sans-serif;
+            overflow-x: hidden; /* 禁止水平滚动条 */
         }
         /* 返回首页按钮样式 */
         #returnHome {
             position: fixed;
             top: 10px;
-            right: 350px; /* 根据其他按钮的位置调整 */
+            right: 450px; /* 根据其他按钮的位置调整 */
             padding: 10px 20px;
             background-color: #28a745; /* 绿色背景 */
             color: white;
@@ -28,7 +29,7 @@
         #backupAlbum {
             position: fixed;
             top: 10px;
-            right: 230px;
+            right: 330px;
             padding: 10px 20px;
             background-color: #007bff;
             color: white;
@@ -40,7 +41,7 @@
         #batchDelete {
             position: fixed;
             top: 10px;
-            right: 110px;
+            right: 210px;
             padding: 10px 20px;
             background-color: #dc3545; /* 红色背景 */
             color: white;
@@ -52,13 +53,31 @@
         #submitPhoto {
             position: fixed;
             top: 10px;
-            right: 10px;
+            right: 90px;
             padding: 10px 20px;
             background-color: #17a2b8; /* 青色背景 */
             color: white;
             border: none;
             cursor: pointer;
             z-index: 1000; /* 确保按钮在最上层 */
+        }
+        /* 左右滑动按钮样式 */
+        #slideLeft, #slideRight {
+            position: fixed;
+            top: 50%;
+            transform: translateY(-50%);
+            padding: 10px;
+            background-color: rgba(0,0,0,0.5);
+            color: white;
+            border: none;
+            cursor: pointer;
+            z-index: 1000; /* 确保按钮在最上层 */
+        }
+        #slideLeft {
+            left: 0;
+        }
+        #slideRight {
+            right: 0;
         }
         /* 模态窗口（lightbox）样式 */
         .modal {
@@ -97,7 +116,7 @@
         }
         /* 图片和删除按钮的容器样式 */
         .img-container {
-            position: absolute; /* 瀑布流布局需要使用绝对定位 */
+            display: inline-block; /* 瀑布流布局需要使用 inline-block */
             margin: 5px;
             width: 150px; /* 设置图框的固定宽度 */
             background-color: rgba(255, 255, 255, 0); /* 半透明背景 */
@@ -137,12 +156,28 @@
             left: 5px;
             z-index: 10; /* 确保复选框在最上层 */
         }
+        #photoWall {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            overflow-x: auto;
+            white-space: nowrap;
+        }
         @media (max-width: 768px) {
             .modal-content {
                 width: 90%;
             }
             .img-container {
                 width: calc(50% - 10px);
+            }
+            #returnHome, #backupAlbum, #batchDelete, #submitPhoto {
+                position: static;
+                display: block;
+                width: 100%;
+                margin: 5px 0;
+            }
+            #slideLeft, #slideRight {
+                display: none;
             }
         }
     </style>
@@ -153,6 +188,8 @@
     <button id="backupAlbum">备份相册</button>
     <button id="batchDelete">批量删除</button>
     <button id="submitPhoto">批量添加图片</button>
+    <button id="slideLeft">&#9664;</button>
+    <button id="slideRight">&#9654;</button>
     <h1 id="albumTitle"></h1>
     <div id="photoWall"></div>
     <textarea id="photoUrl" placeholder="输入图片URL地址，每行一个；无输入请选择图片上传：" cols="60" rows="5" style="margin-top: 50px;"></textarea>
@@ -169,6 +206,8 @@
         document.getElementById('albumTitle').textContent = `${dirName} 相册`;
 
         let photoUrls = [];
+        let currentPage = 0;
+        const photosPerPage = 9; // 每页显示9张图片
 
         async function getPhotos() {
             const response = await fetch(`./db/getdbab`, {
@@ -177,9 +216,17 @@
                 headers: { 'Content-Type': 'application/json' }
             });
             photoUrls = await response.json();
+            displayPhotos();
+        }
+
+        function displayPhotos() {
             const photoWall = document.getElementById('photoWall');
             photoWall.innerHTML = '';
-            photoUrls.forEach(url => {
+            const start = currentPage * photosPerPage;
+            const end = start + photosPerPage;
+            const pagePhotos = photoUrls.slice(start, end);
+
+            pagePhotos.forEach(url => {
                 let imgContainer = document.createElement('div');
                 imgContainer.classList.add('img-container');
 
@@ -190,8 +237,6 @@
 
                 let img = document.createElement('img');
                 img.src = url;
-                img.style.width = '100%';
-                img.style.height = 'auto';
                 img.onclick = function() {
                     document.body.classList.add('modal-open');
                     document.getElementById('myModal').style.display = "block";
@@ -206,9 +251,6 @@
 
                 photoWall.appendChild(imgContainer);
             });
-
-            // 调用瀑布流布局函数
-            waterfallHandler();
         }
 
         async function deletePhotos(photoUrls) {
@@ -274,35 +316,26 @@
             AsubmitPhoto();
         };
 
+        document.getElementById('slideLeft').onclick = function() {
+            if (currentPage > 0) {
+                currentPage--;
+                displayPhotos();
+            }
+        };
+
+        document.getElementById('slideRight').onclick = function() {
+            if ((currentPage + 1) * photosPerPage < photoUrls.length) {
+                currentPage++;
+                displayPhotos();
+            }
+        };
+
         getPhotos();
 
         // 返回首页按钮的点击事件
         document.getElementById('returnHome').onclick = function() {
             window.location.href = '/'; // 这里的 '/' 表示网站的根目录，根据实际情况修改
         };
-
-        // 瀑布流处理
-        function waterfallHandler() {
-            const photoWall = document.getElementById('photoWall');
-            const imgContainers = photoWall.getElementsByClassName('img-container');
-            const imgWidth = 150; // 设置图片的固定宽度
-            const column = parseInt(window.innerWidth / imgWidth);
-            let heightArr = Array(column).fill(0);
-            Array.from(imgContainers).forEach(item => {
-                const itemHeight = item.offsetHeight;
-                const minHeight = Math.min(...heightArr);
-                const minIndex = heightArr.indexOf(minHeight);
-                item.style.position = 'absolute';
-                item.style.top = minHeight + 'px';
-                item.style.left = minIndex * imgWidth + 'px';
-                heightArr[minIndex] += itemHeight;
-            });
-        }
-
-        // 窗口大小改变
-        window.addEventListener('resize', function() {
-            waterfallHandler();
-        });
     </script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/browser-image-compression/2.0.2/browser-image-compression.min.js"></script>
     <script src="album-management.js"></script>
