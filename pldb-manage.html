@@ -13,13 +13,26 @@
             font-family: Arial, sans-serif;
             overflow-x: hidden; /* 禁止水平滚动条 */
         }
+        /* 顶部容器样式 */
+        .top-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            padding: 10px;
+            background-color: #f8f9fa;
+            position: fixed;
+            top: 0;
+            width: 100%;
+            z-index: 1000; /* 确保按钮在最上层 */
+        }
+        /* 输入框样式 */
+        #photoUrl {
+            width: 60%;
+            height: 50px;
+            margin-right: 10px;
+        }
         /* 顶部按钮样式 */
         .top-buttons {
-            position: fixed;
-            top: 10px;
-            left: 50%;
-            transform: translateX(-50%);
-            z-index: 1000; /* 确保按钮在最上层 */
             display: flex;
             gap: 10px;
         }
@@ -39,11 +52,12 @@
             flex-wrap: wrap;
             justify-content: center;
             margin-top: 80px; /* 留出顶部按钮的位置 */
+            padding: 10px;
         }
         /* 图片和删除按钮的容器样式 */
         .img-container {
             margin: 5px;
-            width: calc(100% / 3 - 10px); /* 默认每行3张图片 */
+            width: calc(33.333% - 10px); /* 默认每行3张图片 */
             background-color: rgba(255, 255, 255, 0); /* 半透明背景 */
             text-align: center; /* 使文本居中 */
             position: relative;
@@ -81,23 +95,27 @@
         /* 响应式布局 */
         @media (max-width: 1200px) {
             .img-container {
-                width: calc(100% / 2 - 10px); /* 每行2张图片 */
+                width: calc(50% - 10px); /* 每行2张图片 */
             }
         }
         @media (max-width: 768px) {
             .img-container {
-                width: calc(100% / 1 - 10px); /* 每行1张图片 */
+                width: calc(100% - 10px); /* 每行1张图片 */
             }
-            .top-buttons {
+            .top-container {
                 flex-direction: column;
-                top: 0;
-                left: 0;
-                transform: none;
-                width: 100%;
                 align-items: center;
             }
-            .top-buttons button {
+            #photoUrl {
                 width: 90%;
+                margin-bottom: 10px;
+            }
+            .top-buttons {
+                width: 100%;
+                justify-content: space-around;
+            }
+            .top-buttons button {
+                width: auto;
                 margin: 5px 0;
             }
         }
@@ -155,17 +173,18 @@
     </style>
 </head>
 <body>
-    <!-- 顶部按钮 -->
-    <div class="top-buttons">
-        <button id="returnHome">返回首页</button>
-        <button id="backupAlbum">备份相册</button>
-        <button id="batchDelete">批量删除</button>
-        <button id="submitPhoto">批量添加图片</button>
+    <!-- 顶部容器 -->
+    <div class="top-container">
+        <textarea id="photoUrl" placeholder="输入图片URL地址，每行一个；无输入请选择图片上传：" rows="2"></textarea>
+        <div class="top-buttons">
+            <button id="returnHome">返回首页</button>
+            <button id="backupAlbum">备份相册</button>
+            <button id="batchDelete">批量删除</button>
+            <button id="submitPhoto">批量添加图片</button>
+        </div>
     </div>
     <!-- 图片墙 -->
     <div id="photoWall"></div>
-    <!-- 图片URL输入框 -->
-    <textarea id="photoUrl" placeholder="输入图片URL地址，每行一个；无输入请选择图片上传：" cols="60" rows="5" style="margin-top: 80px;"></textarea>
 
     <!-- 模态窗口 -->
     <div id="myModal" class="modal">
@@ -222,6 +241,8 @@
 
                 photoWall.appendChild(imgContainer);
             });
+
+            waterfallHandler();
         }
 
         function showModal(src) {
@@ -310,6 +331,25 @@
         document.getElementsByClassName('close')[0].onclick = function() {
             closeModal();
         };
+
+        function waterfallHandler() {
+            const photoWall = document.getElementById('photoWall');
+            const imgContainers = photoWall.getElementsByClassName('img-container');
+            const imgWidth = imgContainers[0].offsetWidth;
+            const column = parseInt(photoWall.offsetWidth / imgWidth);
+            let heightArr = Array(column).fill(0);
+            Array.from(imgContainers).forEach(item => {
+                const itemHeight = item.offsetHeight;
+                const minHeight = Math.min(...heightArr);
+                const minIndex = heightArr.indexOf(minHeight);
+                item.style.position = 'absolute';
+                item.style.top = minHeight + 'px';
+                item.style.left = minIndex * imgWidth + 'px';
+                heightArr[minIndex] += itemHeight;
+            });
+        }
+
+        window.addEventListener('resize', waterfallHandler);
 
         getPhotos();
 
