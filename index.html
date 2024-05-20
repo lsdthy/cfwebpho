@@ -6,17 +6,17 @@
     <title>网络图片收集图床</title>
     <style>
         body {
-        font-family: Arial, sans-serif;
-        margin: 0;
-        padding: 0;
-        height: 100vh;
-        display: flex;
-        flex-direction: column;
-        justify-content: flex-start; /* 修改为flex-start */
-        align-items: center;
-        background-color: #f7f7f7;
-        padding-top: 10%; /* 添加顶部的padding */
-    }
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-start;
+            align-items: center;
+            background-color: #f7f7f7;
+            padding-top: 10%;
+        }
         h1 {
             text-align: center;
             margin-bottom: 20px;
@@ -26,16 +26,15 @@
             flex-direction: column;
             align-items: center;
         }
-        input[type="text"] {
+        input[type="text"], input[type="password"] {
             margin-bottom: 20px;
-            padding: 20px;
+            padding: 10px;
             border: 1px solid #ccc;
             border-radius: 5px;
             width: 70%;
             max-width: 500px;
             box-sizing: border-box;
             font-size: 16px;
-            height: 40px;
         }
         input[type="submit"] {
             padding: 10px 20px;
@@ -53,28 +52,29 @@
             body {
                 padding: 10px;
             }
-            input[type="text"] {
+            input[type="text"], input[type="password"] {
                 width: 100%;
             }
-        }    </style>
+        }
+    </style>
 </head>
 <body>
     <div>
         <h1>❀❀❀一颗树洞❀❀❀</h1>
         <h1>❀❀❀欢迎来到网络图片地址整理相册❀❀❀</h1>
         <form id="welcomeForm">
-            <input type="text" id="username" pattern="[a-zA-Z0-9]{6,}" required placeholder="给自己取一个酷酷的名字吧,6个以上英文及数字字符">
+            <input type="text" id="username" required placeholder="给自己取一个名字吧">
+            <input type="password" id="password" required placeholder="输入密码">
             <input type="submit" value="进入相册">
         </form>
     </div>
-     <script>
+    <script>
         document.getElementById('welcomeForm').onsubmit = function(event) {
             event.preventDefault();
             const username = document.getElementById('username').value;
-            window.location.href = `/postalb.html?username=${username}`;
+            const password = document.getElementById('password').value;
+            window.location.href = `/postalb.html?username=${username}&password=${password}`;
         };
-     </script>
-   <!-- 在这里嵌入iframe -->
-    <iframe src="./listdbwall.html" style="width:80%; height:100vh; border:none;"></iframe>
-    </body>
+    </script>
+</body>
 </html>
