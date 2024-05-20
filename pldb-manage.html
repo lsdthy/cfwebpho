@@ -13,118 +13,40 @@
             font-family: Arial, sans-serif;
             overflow-x: hidden; /* 禁止水平滚动条 */
         }
-        /* 返回首页按钮样式 */
-        #returnHome {
+        /* 顶部按钮样式 */
+        .top-buttons {
             position: fixed;
             top: 10px;
-            right: 450px; /* 根据其他按钮的位置调整 */
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 1000; /* 确保按钮在最上层 */
+            display: flex;
+            gap: 10px;
+        }
+        .top-buttons button {
             padding: 10px 20px;
-            background-color: #28a745; /* 绿色背景 */
-            color: white;
             border: none;
             cursor: pointer;
-            z-index: 1000; /* 确保按钮在最上层 */
-        }
-        /* 备份按钮样式 */
-        #backupAlbum {
-            position: fixed;
-            top: 10px;
-            right: 330px;
-            padding: 10px 20px;
-            background-color: #007bff;
             color: white;
-            border: none;
-            cursor: pointer;
-            z-index: 1000; /* 确保按钮在最上层 */
         }
-        /* 批量删除按钮样式 */
-        #batchDelete {
-            position: fixed;
-            top: 10px;
-            right: 210px;
-            padding: 10px 20px;
-            background-color: #dc3545; /* 红色背景 */
-            color: white;
-            border: none;
-            cursor: pointer;
-            z-index: 1000; /* 确保按钮在最上层 */
-        }
-        /* 上传图片按钮样式 */
-        #submitPhoto {
-            position: fixed;
-            top: 10px;
-            right: 90px;
-            padding: 10px 20px;
-            background-color: #17a2b8; /* 青色背景 */
-            color: white;
-            border: none;
-            cursor: pointer;
-            z-index: 1000; /* 确保按钮在最上层 */
-        }
-        /* 左右滑动按钮样式 */
-        #slideLeft, #slideRight {
-            position: fixed;
-            top: 50%;
-            transform: translateY(-50%);
-            padding: 10px;
-            background-color: rgba(0,0,0,0.5);
-            color: white;
-            border: none;
-            cursor: pointer;
-            z-index: 1000; /* 确保按钮在最上层 */
-        }
-        #slideLeft {
-            left: 0;
-        }
-        #slideRight {
-            right: 0;
-        }
-        /* 模态窗口（lightbox）样式 */
-        .modal {
-            display: none;
-            position: fixed;
-            z-index: 1000; /* 确保模态窗口在最上层 */
-            padding-top: 100px;
-            left: 0;
-            top: 0;
-            width: 100%;
-            height: 100%;
-            overflow: auto;
-            background-color: rgb(0,0,0);
-            background-color: rgba(0,0,0,0.9);
-        }
-        .modal-content {
-            margin: auto;
-            display: block;
-            width: 80%;
-            max-width: 700px;
-        }
-        .close {
-            position: absolute;
-            top: 15px;
-            right: 35px;
-            color: #f1f1f1;
-            font-size: 40px;
-            font-weight: bold;
-            transition: 0.3s;
-        }
-        .close:hover,
-        .close:focus {
-            color: #bbb;
-            text-decoration: none;
-            cursor: pointer;
+        #returnHome { background-color: #28a745; } /* 绿色背景 */
+        #backupAlbum { background-color: #007bff; } /* 蓝色背景 */
+        #batchDelete { background-color: #dc3545; } /* 红色背景 */
+        #submitPhoto { background-color: #17a2b8; } /* 青色背景 */
+        /* 瀑布流容器样式 */
+        #photoWall {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            margin-top: 80px; /* 留出顶部按钮的位置 */
         }
         /* 图片和删除按钮的容器样式 */
         .img-container {
-            display: inline-block; /* 瀑布流布局需要使用 inline-block */
             margin: 5px;
-            width: 150px; /* 设置图框的固定宽度 */
+            width: calc(100% / 3 - 10px); /* 默认每行3张图片 */
             background-color: rgba(255, 255, 255, 0); /* 半透明背景 */
-            background-repeat: no-repeat;
-            background-position: center;
-            background-size: cover;
             text-align: center; /* 使文本居中 */
-            line-height: 100px; /* 使文本垂直居中 */
+            position: relative;
         }
         .img-container img {
             width: 100%;
@@ -148,7 +70,7 @@
             overflow: hidden; /* 隐藏溢出的文本 */
         }
         .img-container:hover img {
-            box-shadow: inset 0 0 0 5px green; /* 鼠标悬停时添加金色边框 opacity: 0.9; /* 鼠标悬停时图片半透明 */*/
+            box-shadow: inset 0 0 0 5px green; /* 鼠标悬停时添加金色边框 */
         }
         .select-checkbox {
             position: absolute;
@@ -156,47 +78,101 @@
             left: 5px;
             z-index: 10; /* 确保复选框在最上层 */
         }
-        #photoWall {
-            display: flex;
-            flex-wrap: wrap;
-            justify-content: center;
-            overflow-x: auto;
-            white-space: nowrap;
+        /* 响应式布局 */
+        @media (max-width: 1200px) {
+            .img-container {
+                width: calc(100% / 2 - 10px); /* 每行2张图片 */
+            }
         }
         @media (max-width: 768px) {
-            .modal-content {
-                width: 90%;
-            }
             .img-container {
-                width: calc(50% - 10px);
+                width: calc(100% / 1 - 10px); /* 每行1张图片 */
             }
-            #returnHome, #backupAlbum, #batchDelete, #submitPhoto {
-                position: static;
-                display: block;
+            .top-buttons {
+                flex-direction: column;
+                top: 0;
+                left: 0;
+                transform: none;
                 width: 100%;
+                align-items: center;
+            }
+            .top-buttons button {
+                width: 90%;
                 margin: 5px 0;
             }
-            #slideLeft, #slideRight {
-                display: none;
-            }
+        }
+        /* 模态窗口（lightbox）样式 */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000; /* 确保模态窗口在最上层 */
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0,0,0,0.9);
+        }
+        .modal-content {
+            margin: auto;
+            display: block;
+            width: 80%;
+            max-width: 700px;
+        }
+        .close {
+            position: absolute;
+            top: 15px;
+            right: 35px;
+            color: #f1f1f1;
+            font-size: 40px;
+            font-weight: bold;
+            transition: 0.3s;
+        }
+        .close:hover,
+        .close:focus {
+            color: #bbb;
+            text-decoration: none;
+            cursor: pointer;
+        }
+        /* 左右滑动按钮样式 */
+        .slide-button {
+            position: fixed;
+            top: 50%;
+            transform: translateY(-50%);
+            padding: 10px;
+            background-color: rgba(0,0,0,0.5);
+            color: white;
+            border: none;
+            cursor: pointer;
+            z-index: 1000; /* 确保按钮在最上层 */
+        }
+        #slideLeft {
+            left: 0;
+        }
+        #slideRight {
+            right: 0;
         }
     </style>
 </head>
 <body>
-    <!-- 添加返回首页按钮 -->
-    <button id="returnHome">返回首页</button>
-    <button id="backupAlbum">备份相册</button>
-    <button id="batchDelete">批量删除</button>
-    <button id="submitPhoto">批量添加图片</button>
-    <button id="slideLeft">&#9664;</button>
-    <button id="slideRight">&#9654;</button>
-    <h1 id="albumTitle"></h1>
+    <!-- 顶部按钮 -->
+    <div class="top-buttons">
+        <button id="returnHome">返回首页</button>
+        <button id="backupAlbum">备份相册</button>
+        <button id="batchDelete">批量删除</button>
+        <button id="submitPhoto">批量添加图片</button>
+    </div>
+    <!-- 图片墙 -->
     <div id="photoWall"></div>
-    <textarea id="photoUrl" placeholder="输入图片URL地址，每行一个；无输入请选择图片上传：" cols="60" rows="5" style="margin-top: 50px;"></textarea>
+    <!-- 图片URL输入框 -->
+    <textarea id="photoUrl" placeholder="输入图片URL地址，每行一个；无输入请选择图片上传：" cols="60" rows="5" style="margin-top: 80px;"></textarea>
 
+    <!-- 模态窗口 -->
     <div id="myModal" class="modal">
         <span class="close">×</span>
         <img class="modal-content" id="img01">
+        <button id="slideLeft" class="slide-button">&#9664;</button>
+        <button id="slideRight" class="slide-button">&#9654;</button>
     </div>
 
     <script>
@@ -206,8 +182,7 @@
         document.getElementById('albumTitle').textContent = `${dirName} 相册`;
 
         let photoUrls = [];
-        let currentPage = 0;
-        const photosPerPage = 9; // 每页显示9张图片
+        let currentIndex = 0;
 
         async function getPhotos() {
             const response = await fetch(`./db/getdbab`, {
@@ -222,11 +197,7 @@
         function displayPhotos() {
             const photoWall = document.getElementById('photoWall');
             photoWall.innerHTML = '';
-            const start = currentPage * photosPerPage;
-            const end = start + photosPerPage;
-            const pagePhotos = photoUrls.slice(start, end);
-
-            pagePhotos.forEach(url => {
+            photoUrls.forEach((url, index) => {
                 let imgContainer = document.createElement('div');
                 imgContainer.classList.add('img-container');
 
@@ -237,10 +208,10 @@
 
                 let img = document.createElement('img');
                 img.src = url;
+                img.dataset.index = index;
                 img.onclick = function() {
-                    document.body.classList.add('modal-open');
-                    document.getElementById('myModal').style.display = "block";
-                    document.getElementById('img01').src = this.src;
+                    currentIndex = parseInt(this.dataset.index);
+                    showModal(this.src);
                 }
                 imgContainer.appendChild(img);
 
@@ -251,6 +222,26 @@
 
                 photoWall.appendChild(imgContainer);
             });
+        }
+
+        function showModal(src) {
+            document.body.classList.add('modal-open');
+            document.getElementById('myModal').style.display = "block";
+            document.getElementById('img01').src = src;
+        }
+
+        function closeModal() {
+            document.body.classList.remove('modal-open');
+            document.getElementById('myModal').style.display = "none";
+        }
+
+        function slideImage(direction) {
+            if (direction === 'left') {
+                currentIndex = (currentIndex > 0) ? currentIndex - 1 : photoUrls.length - 1;
+            } else if (direction === 'right') {
+                currentIndex = (currentIndex < photoUrls.length - 1) ? currentIndex + 1 : 0;
+            }
+            document.getElementById('img01').src = photoUrls[currentIndex];
         }
 
         async function deletePhotos(photoUrls) {
@@ -266,14 +257,6 @@
                 alert('图片删除失败，请稍后重试');
                 console.error('Failed to delete photos');
             }
-        }
-
-        var modal = document.getElementById('myModal');
-        var span = document.getElementsByClassName("close")[0];
-
-        span.onclick = function() {
-            document.body.classList.remove('modal-open');
-            modal.style.display = "none";
         }
 
         async function AsubmitPhoto() {
@@ -317,17 +300,15 @@
         };
 
         document.getElementById('slideLeft').onclick = function() {
-            if (currentPage > 0) {
-                currentPage--;
-                displayPhotos();
-            }
+            slideImage('left');
         };
 
         document.getElementById('slideRight').onclick = function() {
-            if ((currentPage + 1) * photosPerPage < photoUrls.length) {
-                currentPage++;
-                displayPhotos();
-            }
+            slideImage('right');
+        };
+
+        document.getElementsByClassName('close')[0].onclick = function() {
+            closeModal();
         };
 
         getPhotos();
