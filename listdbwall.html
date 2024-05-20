@@ -15,14 +15,14 @@
             column-gap: 10px;
             padding: 20px;
             width: 100%;
-            column-fill: balance; /* Ensures columns are filled evenly */
+            column-fill: balance;
         }
         .grid-item {
             background: #fff;
             border-radius: 10px;
             box-shadow: 0 2px 5px rgba(0, 0, 0, 0.15);
             margin-bottom: 10px;
-            break-inside: avoid; /* Prevents column break within an item */
+            break-inside: avoid;
             display: inline-block;
             width: 100%;
         }
@@ -31,7 +31,7 @@
             height: auto;
             display: block;
             border-radius: 10px;
-            opacity: 0; /* Initially hide images */
+            cursor: pointer;
             transition: opacity 0.5s ease-in-out;
         }
         #bigimg {
@@ -41,7 +41,7 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background-color: rgba(0, 0, 0, 0.5);
+            background-color: rgba(0, 0, 0, 0.7);
             z-index: 1000;
         }
         #bigimg img {
@@ -53,26 +53,13 @@
             object-fit: contain;
             transform: translate(-50%, -50%);
         }
-        @media (max-width: 480px) {
-            .grid { column-count: 1; }
-        }
-        @media (min-width: 481px) and (max-width: 768px) {
-            .grid { column-count: 2; }
-        }
-        @media (min-width: 769px) and (max-width: 1024px) {
-            .grid { column-count: 3; }
-        }
-        @media (min-width: 1025px) and (max-width: 2048px) {
-            .grid { column-count: 3; }
-        }
-        @media (min-width: 2049px) {
-            .grid { column-count: 5; }
-        }
     </style>
 </head>
 <body>
     <div class="grid"></div>
-    <div id="bigimg" onclick="closeBigImg();"></div>
+    <div id="bigimg" onclick="closeBigImg();">
+        <img src="" alt="Expanded image">
+    </div>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
     <script>
         const params = new URLSearchParams(window.location.search);
@@ -88,6 +75,7 @@
             if (response.ok) {
                 const imgList = await response.json();
                 renderImages(imgList);
+                preloadImages(imgList);
             } else {
                 console.error('Failed to fetch photos');
             }
@@ -96,45 +84,49 @@
         function renderImages(imgList) {
             const grid = document.querySelector('.grid');
             grid.innerHTML = imgList.map(img => 
-                `<div class="grid-item"><img data-src="${img}" src="loading.gif" alt="Loading..."></div>`
+                `<div class="grid-item"><img src="loading.gif" data-src="${img}" alt="Photo" onclick="expandImage(this)"></div>`
             ).join('');
             lazyLoadImages();
         }
 
+        function preloadImages(imgList) {
+            const imagesToLoad = imgList.slice(0, 10); // Load first 10 images ahead of time
+            imagesToLoad.forEach(img => {
+                const image = new Image();
+                image.src = img;
+            });
+        }
+
         function lazyLoadImages() {
             const images = document.querySelectorAll('.grid-item img');
-            const config = {
-                rootMargin: '50px 0px', // Load images 50px before they enter the viewport
-                threshold: 0.01
-            };
-
-            let observer = new IntersectionObserver(function(entries, self) {
+            const observer = new IntersectionObserver((entries) => {
                 entries.forEach(entry => {
                     if (entry.isIntersecting) {
                         const img = entry.target;
                         img.src = img.dataset.src;
-                        img.onload = () => img.style.opacity = 1;
-                        self.unobserve(entry.target);
+                        img.style.opacity = 1;
+                        observer.unobserve(img);
                     }
                 });
-            }, config);
+            }, {
+                rootMargin: '100px'
+            });
 
             images.forEach(image => {
                 observer.observe(image);
             });
         }
 
-        function showBigImg(img) {
+        function expandImage(img) {
             const bigImg = document.getElementById('bigimg');
-            const imgUrl = img.getAttribute('src');
-            bigImg.innerHTML = '<img src="' + imgUrl + '">';
+            const expandedImg = bigImg.querySelector('img');
+            expandedImg.src = img.dataset.src || img.src;
             bigImg.style.display = 'block';
         }
 
         function closeBigImg() {
             const bigImg = document.getElementById('bigimg');
             bigImg.style.display = 'none';
-            bigImg.innerHTML = '';
         }
 
         fetchPhotos();
