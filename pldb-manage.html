@@ -360,19 +360,13 @@
         }
 
         function handleFiles(files) {
-            // 处理文件
-            ([...files]).forEach(uploadFile);
-        }
-
-        function uploadFile(file) {
-            const reader = new FileReader();
-            reader.readAsDataURL(file);
-            reader.onloadend = function() {
-                const img = document.createElement('img');
-                img.src = reader.result;
-                document.getElementById('photoWall').appendChild(img);
-                // 可以在此处添加上传逻辑，例如将图像数据发送到服务器
-            }
+            let photoUrls = [];
+            [...files].forEach(file => {
+                const url = URL.createObjectURL(file);
+                photoUrls.push(url);
+            });
+            document.getElementById('photoUrl').value = photoUrls.join('\n');
+            document.getElementById('submitPhoto').click();
         }
 
         fileSelect.addEventListener('click', () => fileElem.click(), false);
