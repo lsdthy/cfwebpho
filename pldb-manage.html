@@ -23,41 +23,17 @@
             color: white;
             border: none;
             cursor: pointer;
+            background-color: #007bff;
         }
         #returnHome { background-color: #28a745; }
-        #backupAlbum { background-color: #007bff; }
+        #backupAlbum { background-color: #ffc107; }
         #batchDelete { background-color: #dc3545; }
-        #batchDownload { background-color: #ffc107; color: black; }
-        .modal {
-            display: none;
-            position: fixed;
-            z-index: 1000;
-            padding-top: 100px;
-            left: 0;
-            top: 0;
-            width: 100%;
-            height: 100%;
-            overflow: auto;
-            background-color: rgba(0,0,0,0.9);
-        }
-        .modal-content {
-            margin: auto;
-            display: block;
-            width: 80%;
-            max-width: 700px;
-        }
-        .close {
-            position: absolute;
-            top: 15px;
-            right: 35px;
-            color: #f1f1f1;
-            font-size: 40px;
-            font-weight: bold;
-            transition: 0.3s;
-        }
-        .close:hover, .close:focus {
-            color: #bbb;
-            text-decoration: none;
+        #batchDownload { background-color: #6c757d; color: white; }
+        #dragUploadArea {
+            border: 2px dashed #ccc;
+            margin: 20px;
+            padding: 20px;
+            text-align: center;
             cursor: pointer;
         }
         .img-container {
@@ -66,36 +42,15 @@
             margin: 5px;
             width: 150px;
             height: 100px;
-            background-color: rgba(255, 255, 255, 0);
-            background-repeat: no-repeat;
-            background-position: center;
-            background-size: cover;
+            background-color: #f8f9fa;
             text-align: center;
             line-height: 100px;
+            vertical-align: middle;
         }
         .img-container img {
             width: 100%;
             height: 100%;
             object-fit: cover;
-        }
-        #dragUploadArea {
-            border: 2px dashed #ccc;
-            margin: 20px;
-            padding: 20px;
-            text-align: center;
-            cursor: pointer;
-        }
-        #fileInput {
-            display: none;
-        }
-        @media (max-width: 768px) {
-            .modal-content {
-                width: 90%;
-            }
-            .img-container {
-                width: calc(50% - 10px);
-                height: 150px;
-            }
         }
     </style>
 </head>
@@ -106,74 +61,59 @@
         <button id="batchDelete">批量删除</button>
         <button id="batchDownload">批量下载</button>
     </div>
-    <h1 id="albumTitle"></h1>
+    <h1 id="albumTitle">相册管理</h1>
     <div id="photoWall"></div>
-    <textarea id="photoUrl" placeholder="输入图片URL地址，每行一个；无输入请选择图片上传：" cols="60" rows="5"></textarea>
-    <button id="submitPhoto">批量添加图片</button>
     <div id="dragUploadArea">拖拽图片到这里或点击上传</div>
-    <input type="file" id="fileInput" multiple>
-
-    <div id="myModal" class="modal">
-        <span class="close">×</span>
-        <img class="modal-content" id="img01">
-    </div>
-
+    <input type="file" id="fileInput" multiple style="display: none;">
+    
     <script>
-        document.getElementById('albumTitle').textContent = new URLSearchParams(window.location.search).get('directory') + ' 相册';
-
-        document.getElementById('dragUploadArea').addEventListener('click', function() {
+        document.getElementById('dragUploadArea').addEventListener('click', () => {
             document.getElementById('fileInput').click();
         });
 
-        document.getElementById('fileInput').addEventListener('change', function(event) {
-            uploadFiles(event.target.files);
+        document.getElementById('fileInput').addEventListener('change', (event) => {
+            handleFileUpload(event.target.files);
         });
 
-        document.getElementById('dragUploadArea').addEventListener('dragover', function(event) {
+        document.getElementById('dragUploadArea').addEventListener('dragover', (event) => {
             event.preventDefault();
         });
 
-        document.getElementById('dragUploadArea').addEventListener('drop', function(event) {
+        document.getElementById('dragUploadArea').addEventListener('drop', (event) => {
             event.preventDefault();
-            uploadFiles(event.dataTransfer.files);
+            handleFileUpload(event.dataTransfer.files);
         });
 
-        function uploadFiles(files) {
-            const url = './db/addbpho'; // 服务器上传接口
+        function handleFileUpload(files) {
+            const url = './db/addbpho'; // Server-side upload handler
+            const formData = new FormData();
             for (const file of files) {
-                const formData = new FormData();
                 formData.append('file', file);
-                fetch(url, {
-                    method: 'POST',
-                    body: formData
-                })
-                .then(response => response.json())
-                .then(data => {
-                    console.log('File uploaded successfully:', data);
-                    if (data.url) {  // 假设服务器返回图片的URL
-                        addPhotoToWall(data.url);
-                    }
-                })
-                .catch(error => {
-                    console.error('Error uploading file:', error);
-                });
             }
+            
+            fetch(url, {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                console.log('Files uploaded successfully:', data);
+                if (data.url) {
+                    addPhotoToWall(data.url);
+                }
+            })
+            .catch(error => {
+                console.error('Error uploading files:', error);
+            });
         }
 
         function addPhotoToWall(imageUrl) {
             const imgContainer = document.createElement('div');
             imgContainer.className = 'img-container';
-            imgContainer.innerHTML = `<img src="${imageUrl}" onclick="showModal(this.src)">`;
+            const img = document.createElement('img');
+            img.src = imageUrl;
+            imgContainer.appendChild(img);
             document.getElementById('photoWall').appendChild(imgContainer);
-        }
-
-        function showModal(imageSrc) {
-            const modal = document.getElementById('myModal');
-            modal.style.display = 'block';
-            document.getElementById('img01').src = imageSrc;
-            document.querySelector('.close').onclick = function() {
-                modal.style.display = 'none';
-            };
         }
     </script>
 </body>
