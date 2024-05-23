@@ -143,6 +143,14 @@
                 height: 150px; /* 调整为适合移动设备的大小 */
             }
         }
+        /* 拖拽上传区域样式 */
+        .upload-area {
+            border: 2px dashed #007bff;
+            padding: 20px;
+            text-align: center;
+            cursor: pointer;
+            margin: 20px 0;
+        }
     </style>
 </head>
 <body>
@@ -155,6 +163,7 @@
     </div>
     <h1 id="albumTitle"></h1>
     <div id="photoWall"></div>
+    <div class="upload-area" id="uploadArea">拖拽图片到这里上传或点击上传</div>
     <textarea id="photoUrl" placeholder="输入图片URL地址，每行一个；无输入请选择图片上传：" cols="60" rows="5"></textarea>
     <button id="submitPhoto">批量添加图片</button>
 
@@ -306,6 +315,60 @@
         document.getElementById('returnHome').onclick = function() {
             window.location.href = '/'; // 这里的 '/' 表示网站的根目录，根据实际情况修改
         };
+
+        // 拖拽上传功能
+        const uploadArea = document.getElementById('uploadArea');
+        uploadArea.addEventListener('dragover', (event) => {
+            event.preventDefault();
+            uploadArea.style.borderColor = 'green';
+        });
+        uploadArea.addEventListener('dragleave', () => {
+            uploadArea.style.borderColor = '#007bff';
+        });
+        uploadArea.addEventListener('drop', async (event) => {
+            event.preventDefault();
+            uploadArea.style.borderColor = '#007bff';
+            const files = event.dataTransfer.files;
+            const formData = new FormData();
+            for (const file of files) {
+                formData.append('images', file);
+            }
+            formData.append('username', username);
+            formData.append('dirName', dirName);
+            const response = await fetch('./upload', {
+                method: 'POST',
+                body: formData
+            });
+            if (response.ok) {
+                window.location.reload();
+            } else {
+                alert('上传失败，请稍后重试。');
+            }
+        });
+        uploadArea.addEventListener('click', () => {
+            const input = document.createElement('input');
+            input.type = 'file';
+            input.multiple = true;
+            input.onchange = async (event) => {
+                const files = event.target.files;
+                const formData = new FormData();
+                for (const file of files) {
+                    formData.append('images', file);
+                }
+                formData.append('username', username);
+                formData.append('dirName', dirName);
+                const response = await fetch('./upload', {
+                    method: 'POST',
+                    body: formData
+                });
+                if (response.ok) {
+                    window.location.reload();
+                } else {
+                    alert('上传失败，请稍后重试。');
+                }
+            };
+            input.click();
+        });
     </script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/browser-image-compression/2.0.2/browser-image-compression.min.js"></script>
     <script src="album-management.js"></script>
