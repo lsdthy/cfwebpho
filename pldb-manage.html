@@ -143,21 +143,6 @@
                 height: 150px; /* 调整为适合移动设备的大小 */
             }
         }
-        /* 拖拽区域样式 */
-        #drop-area {
-            border: 2px dashed #ccc;
-            border-radius: 20px;
-            width: 100%;
-            max-width: 600px;
-            height: 200px;
-            font-family: sans-serif;
-            margin: 20px auto;
-            padding: 20px;
-            text-align: center;
-        }
-        #drop-area.highlight {
-            border-color: purple;
-        }
     </style>
 </head>
 <body>
@@ -172,13 +157,6 @@
     <div id="photoWall"></div>
     <textarea id="photoUrl" placeholder="输入图片URL地址，每行一个；无输入请选择图片上传：" cols="60" rows="5"></textarea>
     <button id="submitPhoto">批量添加图片</button>
-
-    <!-- 拖拽区域 -->
-    <div id="drop-area">
-        <p>拖拽图片到此区域或点击上传</p>
-        <input type="file" id="fileElem" multiple accept="image/*" style="display:none">
-        <button id="fileSelect">上传图片</button>
-    </div>
 
     <div id="myModal" class="modal">
         <span class="close">×</span>
@@ -328,53 +306,8 @@
         document.getElementById('returnHome').onclick = function() {
             window.location.href = '/'; // 这里的 '/' 表示网站的根目录，根据实际情况修改
         };
-
-        // 拖拽上传功能
-        let dropArea = document.getElementById('drop-area');
-        let fileSelect = document.getElementById('fileSelect');
-        let fileElem = document.getElementById('fileElem');
-
-        ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
-            dropArea.addEventListener(eventName, preventDefaults, false);
-        });
-
-        function preventDefaults(e) {
-            e.preventDefault();
-            e.stopPropagation();
-        }
-
-        ['dragenter', 'dragover'].forEach(eventName => {
-            dropArea.addEventListener(eventName, () => dropArea.classList.add('highlight'), false);
-        });
-
-        ['dragleave', 'drop'].forEach(eventName => {
-            dropArea.addEventListener(eventName, () => dropArea.classList.remove('highlight'), false);
-        });
-
-        dropArea.addEventListener('drop', handleDrop, false);
-
-        function handleDrop(e) {
-            let dt = e.dataTransfer;
-            let files = dt.files;
-            handleFiles(files);
-        }
-
-        function handleFiles(files) {
-            let photoUrls = [];
-            [...files].forEach(file => {
-                const url = URL.createObjectURL(file);
-                photoUrls.push(url);
-            });
-            document.getElementById('photoUrl').value = photoUrls.join('\n');
-            document.getElementById('submitPhoto').click();
-        }
-
-        fileSelect.addEventListener('click', () => fileElem.click(), false);
-
-        fileElem.addEventListener('change', (e) => {
-            let files = e.target.files;
-            handleFiles(files);
-        });
     </script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/browser-image-compression/2.0.2/browser-image-compression.min.js"></script>
+    <script src="album-management.js"></script>
 </body>
 </html>
