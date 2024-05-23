@@ -84,7 +84,7 @@
             text-decoration: none;
             cursor: pointer;
         }
-    </style>
+     </style>
 </head>
 <body>
     <div class="top-buttons">
@@ -93,83 +93,43 @@
         <button id="batchDelete">批量删除</button>
         <button id="batchDownload">批量下载</button>
     </div>
-    <h1 id="albumTitle">相册管理</h1>
+    <h1 id="albumTitle"></h1>
     <div id="photoWall"></div>
-    <div id="dragUploadArea">拖拽图片到这里或点击选择图片</div>
-    <input type="file" id="fileInput" multiple style="display: none;">
-    <textarea id="photoUrl" placeholder="图片URL地址，每行一个或者拖拽图片到上面区域。" cols="60" rows="5"></textarea>
+    <textarea id="photoUrl" placeholder="输入图片URL地址，每行一个；无输入请选择图片上传：" cols="60" rows="5"></textarea>
     <button id="submitPhoto">批量添加图片</button>
-
     <div id="myModal" class="modal">
         <span class="close">×</span>
         <img class="modal-content" id="img01">
     </div>
-
+    
     <script>
-        document.getElementById('dragUploadArea').addEventListener('click', function() {
-            document.getElementById('fileInput').click();
-        });
-
-        document.getElementById('fileInput').addEventListener('change', function(event) {
-            handleFiles(event.target.files);
-        });
-
-        document.getElementById('dragUploadArea').addEventListener('dragover', function(event) {
-            event.preventDefault();
-        });
-
-        document.getElementById('dragUploadArea').addEventListener('drop', function(event) {
-            event.preventDefault();
-            handleFiles(event.dataTransfer.files);
-        });
-
-        function handleFiles(files) {
-            const url = './db/uploadImages'; // Assume this is your server's endpoint for handling image uploads
-            const formData = new FormData();
-            Array.from(files).forEach(file => {
-                formData.append('files[]', file);
-            });
-
-            fetch(url, {
-                method: 'POST',
-                body: formData
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.urls) {
-                    data.urls.forEach(url => {
-                        document.getElementById('photoUrl').value += url + "\n";
-                        addPhotoToWall(url);
-                    });
-                }
-            })
-            .catch(error => {
-                console.error('Error uploading files:', error);
-            });
-        }
-
-        function addPhotoToWall(url) {
-            const imgContainer = document.createElement('div');
-            imgContainer.className = 'img-container';
-            const img = document.createElement('img');
-            img.src = url;
-            imgContainer.appendChild(img);
-            img.onclick = function() {
-                document.getElementById('myModal').style.display = "block";
-                document.getElementById('img01').src = this.src;
-            };
-            document.getElementById('photoWall').appendChild(imgContainer);
-        }
-
         document.getElementById('submitPhoto').addEventListener('click', function() {
             const photoUrls = document.getElementById('photoUrl').value.trim().split('\n');
+            // 此处可以添加发送到服务器的代码，假设是通过API提交URL
             console.log('Submitting URLs:', photoUrls);
-            // Here, you can send these URLs to the server to add them to the database or handle them as needed
+            alert('图片提交成功！');
         });
 
-        document.getElementsByClassName("close")[0].onclick = function() {
-            document.getElementById('myModal').style.display = "none";
-        };
+        // 拖拽上传的支持
+        document.body.addEventListener('dragover', function(e) {
+            e.preventDefault(); // 防止默认行为
+        });
+
+        document.body.addEventListener('drop', function(e) {
+            e.preventDefault(); // 防止默认行为
+            const files = e.dataTransfer.files;
+            if (files.length) {
+                Array.from(files).forEach(file => {
+                    if (file.type.startsWith('image/')) {
+                        const reader = new FileReader();
+                        reader.onload = function(event) {
+                            document.getElementById('photoUrl').value += event.target.result + '\n'; // 将DataURL添加到文本区域
+                        };
+                        reader.readAsDataURL(file); // 读取文件并转化为DataURL
+                    }
+                });
+            }
+        });
     </script>
 </body>
 </html>
