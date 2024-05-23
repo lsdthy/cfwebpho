@@ -23,6 +23,7 @@
             color: white;
             border: none;
             cursor: pointer;
+            background-color: #007bff;
         }
         #returnHome { background-color: #28a745; }
         #backupAlbum { background-color: #007bff; }
@@ -35,13 +36,53 @@
             text-align: center;
             cursor: pointer;
         }
-        textarea {
-            width: 95%;
+        .img-container {
+            display: inline-block;
+            position: relative;
+            margin: 5px;
+            width: 150px;
             height: 100px;
-            margin: 10px;
+            background-color: rgba(255, 255, 255, 0.8);
+            text-align: center;
+            line-height: 100px;
         }
-        button {
-            margin: 10px;
+        .img-container img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            padding-top: 100px;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0,0,0,0.9);
+        }
+        .modal-content {
+            margin: auto;
+            display: block;
+            width: 80%;
+            max-width: 700px;
+        }
+        .close {
+            position: absolute;
+            top: 15px;
+            right: 35px;
+            color: #f1f1f1;
+            font-size: 40px;
+            font-weight: bold;
+            transition: 0.3s;
+        }
+        .close:hover,
+        .close:focus {
+            color: #bbb;
+            text-decoration: none;
+            cursor: pointer;
         }
     </style>
 </head>
@@ -56,16 +97,21 @@
     <div id="photoWall"></div>
     <div id="dragUploadArea">拖拽图片到这里或点击选择图片</div>
     <input type="file" id="fileInput" multiple style="display: none;">
-    <textarea id="photoUrl" placeholder="图片URL地址，每行一个或者拖拽图片到上面区域。"></textarea>
+    <textarea id="photoUrl" placeholder="图片URL地址，每行一个或者拖拽图片到上面区域。" cols="60" rows="5"></textarea>
     <button id="submitPhoto">批量添加图片</button>
-    
+
+    <div id="myModal" class="modal">
+        <span class="close">×</span>
+        <img class="modal-content" id="img01">
+    </div>
+
     <script>
         document.getElementById('dragUploadArea').addEventListener('click', function() {
             document.getElementById('fileInput').click();
         });
 
         document.getElementById('fileInput').addEventListener('change', function(event) {
-            processFiles(event.target.files);
+            handleFiles(event.target.files);
         });
 
         document.getElementById('dragUploadArea').addEventListener('dragover', function(event) {
@@ -74,27 +120,56 @@
 
         document.getElementById('dragUploadArea').addEventListener('drop', function(event) {
             event.preventDefault();
-            processFiles(event.dataTransfer.files);
+            handleFiles(event.dataTransfer.files);
         });
 
-        function processFiles(files) {
-            const reader = new FileReader();
-            reader.onload = function(event) {
-                const url = event.target.result; // 读取到的图片URL
-                document.getElementById('photoUrl').value += url + "\n"; // 将URL添加到文本区域
-            };
+        function handleFiles(files) {
+            const url = './db/uploadImages'; // Assume this is your server's endpoint for handling image uploads
+            const formData = new FormData();
             Array.from(files).forEach(file => {
-                if (file.type.startsWith('image/')) {
-                    reader.readAsDataURL(file); // 读取文件并转化为DataURL
-                }
+                formData.append('files[]', file);
             });
+
+            fetch(url, {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.urls) {
+                    data.urls.forEach(url => {
+                        document.getElementById('photoUrl').value += url + "\n";
+                        addPhotoToWall(url);
+                    });
+                }
+            })
+            .catch(error => {
+                console.error('Error uploading files:', error);
+            });
+        }
+
+        function addPhotoToWall(url) {
+            const imgContainer = document.createElement('div');
+            imgContainer.className = 'img-container';
+            const img = document.createElement('img');
+            img.src = url;
+            imgContainer.appendChild(img);
+            img.onclick = function() {
+                document.getElementById('myModal').style.display = "block";
+                document.getElementById('img01').src = this.src;
+            };
+            document.getElementById('photoWall').appendChild(imgContainer);
         }
 
         document.getElementById('submitPhoto').addEventListener('click', function() {
             const photoUrls = document.getElementById('photoUrl').value.trim().split('\n');
             console.log('Submitting URLs:', photoUrls);
-            // 在此添加提交到服务器的代码逻辑
+            // Here, you can send these URLs to the server to add them to the database or handle them as needed
         });
+
+        document.getElementsByClassName("close")[0].onclick = function() {
+            document.getElementById('myModal').style.display = "none";
+        };
     </script>
 </body>
 </html>
